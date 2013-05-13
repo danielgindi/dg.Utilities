@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{592C8FC4-B880-468D-B460-B5114BE0066C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>dg.Utilities</RootNamespace>
+    <AssemblyName>dg.Utilities</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\_Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\_Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>strongKey.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Apns\NotificationService.cs" />
+    <Compile Include="Apns\Feedback.cs" />
+    <Compile Include="Apns\NotificationAlert.cs" />
+    <Compile Include="Apns\NotificationChannel.cs" />
+    <Compile Include="Apns\NotificationDeliveryError.cs" />
+    <Compile Include="Apns\NotificationPayload.cs" />
+    <Compile Include="Excel\Elements\Alignment.cs" />
+    <Compile Include="Excel\Elements\Border.cs" />
+    <Compile Include="Excel\Elements\Interior.cs" />
+    <Compile Include="Excel\Elements\Font.cs" />
+    <Compile Include="Excel\Elements\Style.cs" />
+    <Compile Include="Excel\Enumerations\FontFamily.cs" />
+    <Compile Include="Excel\Enumerations\FontVerticalAlign.cs" />
+    <Compile Include="Excel\Enumerations\FontUnderline.cs" />
+    <Compile Include="Excel\Enumerations\InteriorPattern.cs" />
+    <Compile Include="Excel\Enumerations\BorderLineStyle.cs" />
+    <Compile Include="Excel\Enumerations\BorderPosition.cs" />
+    <Compile Include="Excel\Enumerations\HorizontalReadingOrder.cs" />
+    <Compile Include="Excel\Enumerations\AlignmentVertical.cs" />
+    <Compile Include="Excel\Enumerations\HorizontalAlignment.cs" />
+    <Compile Include="Excel\Elements\NumberFormat.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
+    <Compile Include="General Utilities\BBCode.cs" />
+    <Compile Include="Bindable\BindableCollection.cs" />
+    <Compile Include="Bindable\BindableList.cs" />
+    <Compile Include="Bindable\IBindableCollection.cs" />
+    <Compile Include="General Utilities\Colors.cs" />
+    <Compile Include="General Utilities\Configuration.cs" />
+    <Compile Include="General Utilities\AppConfig.cs" />
+    <Compile Include="Extensions\ImageExtensions.cs" />
+    <Compile Include="Extensions\PixelFormatExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="General Utilities\Http.cs" />
+    <Compile Include="Imaging\Encoding\GifEncoder.cs" />
+    <Compile Include="Imaging\Encoding\LZWEncoder.cs" />
+    <Compile Include="Imaging\Enumerations.cs" />
+    <Compile Include="Imaging\ExifPropertyItems.cs" />
+    <Compile Include="Imaging\ImagingUtility.cs" />
+    <Compile Include="Imaging\MarginsCropper.cs" />
+    <Compile Include="Imaging\Processing\ColorArgument.cs" />
+    <Compile Include="Imaging\Processing\DirectAccessBitmap.cs" />
+    <Compile Include="Imaging\Processing\Filters\Blur.cs" />
+    <Compile Include="Imaging\Processing\Filters\Brightness.cs" />
+    <Compile Include="Imaging\Processing\Filters\ColorFilter.cs" />
+    <Compile Include="Imaging\Processing\Filters\Contrast.cs" />
+    <Compile Include="Imaging\Processing\Filters\ConvolutionMatrix.cs" />
+    <Compile Include="Imaging\Processing\Filters\Emboss.cs" />
+    <Compile Include="Imaging\Processing\Filters\EqualizeHistogram.cs" />
+    <Compile Include="Imaging\Processing\Filters\ExactColorReplace.cs" />
+    <Compile Include="Imaging\Processing\Filters\Flip.cs" />
+    <Compile Include="Imaging\Processing\Filters\GammaCorrection.cs" />
+    <Compile Include="Imaging\Processing\Filters\GrayScale.cs" />
+    <Compile Include="Imaging\Processing\Filters\GuassianBlur.cs" />
+    <Compile Include="Imaging\Processing\Filters\IImageFilter.cs" />
+    <Compile Include="Imaging\Processing\Filters\Invert.cs" />
+    <Compile Include="Imaging\Processing\Filters\LaplaceEdgeDetect.cs" />
+    <Compile Include="Imaging\Processing\Filters\Pixellate.cs" />
+    <Compile Include="Imaging\Processing\Filters\RedEyeReduction.cs" />
+    <Compile Include="Imaging\Processing\Filters\Saturate.cs" />
+    <Compile Include="Imaging\Processing\Filters\Sharpen.cs" />
+    <Compile Include="Imaging\Processing\Filters\SobelEdgeDetect.cs" />
+    <Compile Include="Imaging\Quantizing\BaseColorCacheQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\BaseColorQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\BaseColorCache.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\Common\ColorModel.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\EuclideanDistance\EuclideanDistanceColorCache.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\IColorCache.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\LocalitySensitiveHash\LshBucketInfo.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\LocalitySensitiveHash\LshColorCache.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\Octree\OctreeCacheNode.cs" />
+    <Compile Include="Imaging\Quantizing\ColorCaches\Octree\OctreeColorCache.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\BaseColorDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\AtkinsonDithering.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\BaseErrorDiffusionDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\BurkesDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\FanDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\FilterLiteSierra.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\FloydSteinbergDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\JarvisJudiceNinkeDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\ShiauDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\SierraDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\StuckiDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\ErrorDiffusion\TwoRowSierraDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\IColorDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\Ordered\BaseOrderedDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\Ordered\BayerDitherer4.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\Ordered\BayerDitherer8.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\Ordered\ClusteredDotDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Ditherers\Ordered\DotHalfToneDitherer.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\ColorModelHelper.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\FastRandom.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\ImageBuffer.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixel.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\PixelFormatUtility.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\IIndexedPixel.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\Indexed\PixelData1Indexed.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\Indexed\PixelData4Indexed.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\Indexed\PixelData8Indexed.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\INonIndexedPixel.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataArgb1555.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataArgb64.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataArgb8888.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataGray16.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataRgb48.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataRgb555.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataRgb565.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataRgb888.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\Pixels\NonIndexed\PixelDataRgb8888.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\PixelTransform.cs" />
+    <Compile Include="Imaging\Quantizing\Helpers\QuantizationHelper.cs" />
+    <Compile Include="Imaging\Quantizing\IColorQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\PathProviders\IPathProvider.cs" />
+    <Compile Include="Imaging\Quantizing\PathProviders\ReversedPathProvider.cs" />
+    <Compile Include="Imaging\Quantizing\PathProviders\SerpentinePathProvider.cs" />
+    <Compile Include="Imaging\Quantizing\PathProviders\StandardPathProvider.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\DistinctSelection\DistinctSelectionIEnumerableExtensions.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\DistinctSelection\DistinctBucket.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\DistinctSelection\DistinctColorInfo.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\DistinctSelection\DistinctSelectionQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\MedianCut\MedianCutCube.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\MedianCut\MedianCutQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\NeuQuant\NeuralColorQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Octree\OctreeNode.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Octree\OctreeQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\OptimalPalette\OptimalPaletteQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Popularity\PopularityColorSlot.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Popularity\PopularityQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Uniform\UniformColorSlot.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\Uniform\UniformQuantizer.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\XiaolinWu\WuColorCube.cs" />
+    <Compile Include="Imaging\Quantizing\Quantizers\XiaolinWu\WuColorQuantizer.cs" />
+    <Compile Include="Imaging\SharedPinnedByteArray.cs" />
+    <Compile Include="General Utilities\Location.cs" />
+    <Compile Include="General Utilities\Strings.cs" />
+    <Compile Include="Extensions\UriExtensions.cs" />
+    <Compile Include="General Utilities\Folders.cs" />
+    <Compile Include="General Utilities\Mail.cs" />
+    <Compile Include="Csv\Csv.cs" />
+    <Compile Include="Encryption\TeaEncryptor.cs" />
+    <Compile Include="General Utilities\EnumStrings.cs" />
+    <Compile Include="Excel\Excel.cs" />
+    <Compile Include="Extensions\ArrayExtensions.cs" />
+    <Compile Include="Extensions\CharArrayExtensions.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
+    <Compile Include="Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="Extensions\IListExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="General Utilities\Files.cs" />
+    <Compile Include="Maths\MathExpressions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\AttributesContainer.cs" />
+    <Compile Include="Serialization\SerializableDictionary.cs" />
+    <Compile Include="Serialization\SerializableDoubleKey.cs" />
+    <Compile Include="Serialization\XmlSerializerHelper.cs" />
+    <Compile Include="Threading\CancelableAsyncResult.cs" />
+    <Compile Include="Threading\Consumer.cs" />
+    <Compile Include="Threading\LockSignal.cs" />
+    <Compile Include="Threading\Producer.cs" />
+    <Compile Include="Threading\SingleThreadedTimeout.cs" />
+    <Compile Include="Threading\SingleThreadedTimer.cs" />
+    <Compile Include="Threading\Worker.cs" />
+    <Compile Include="WebApiServices\RestHandler.cs" />
+    <Compile Include="WebApiServices\RestHandlerRoute.cs" />
+    <Compile Include="WebApiServices\RestHandlerTarget.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="strongKey.pfx" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
