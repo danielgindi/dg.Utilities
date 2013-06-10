@@ -5,7 +5,7 @@ using System.ComponentModel;
 
 namespace dg.Utilities
 {
-    public abstract class BindableList<Type> : List<Type>, IBindableCollection
+    public abstract class BindableList<T> : List<T>, IBindableCollection
     {
         // Support for Data Binding
         public PropertyDescriptorCollection GetItemProperties(PropertyDescriptor[] listAccessors)

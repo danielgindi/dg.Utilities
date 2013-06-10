@@ -15,7 +15,12 @@ namespace dg.Utilities
             return Input.IsEmpty || Input == Color.Transparent;
         }
 
-        public static string Css(this Color Input, bool NumberSign = true)
+        public static string Css(this Color Input)
+        {
+            return Colors.GetCss(Input);
+        }
+
+        public static string Css(this Color Input, bool NumberSign)
         {
             return Colors.GetCss(Input, NumberSign);
         }

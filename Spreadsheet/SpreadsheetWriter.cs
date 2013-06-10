@@ -6,12 +6,12 @@ using System.IO;
 using System.Globalization;
 using System.Drawing;
 
-namespace dg.Utilities
+namespace dg.Utilities.Spreadsheet
 {
     /// <summary>
     /// Written by Daniel Cohen Gindi (danielgindi@gmail.com)
     /// </summary>
-    public partial class Excel
+    public partial class SpreadsheetWriter
     {
         #region Private Variables
 
@@ -34,7 +34,7 @@ namespace dg.Utilities
 
         #region Constructors
 
-        public Excel(bool IsXml, System.IO.Stream FileOutput, Encoding FileEncoding)
+        public SpreadsheetWriter(bool IsXml, System.IO.Stream FileOutput, Encoding FileEncoding)
         {
             _IsXml = IsXml;
             _FileOutput = FileOutput;
@@ -44,12 +44,12 @@ namespace dg.Utilities
                 _OutputBuilder = new StringBuilder();
             }
         }
-        public Excel(bool IsXml, System.IO.Stream FileOutput)
+        public SpreadsheetWriter(bool IsXml, System.IO.Stream FileOutput)
             : this(IsXml, FileOutput, Encoding.UTF8)
         {
 
         }
-        public Excel(bool IsXml)
+        public SpreadsheetWriter(bool IsXml)
             : this(IsXml, null, null)
         {
         }
@@ -119,16 +119,16 @@ namespace dg.Utilities
 
         #region DataTable automation
 
-        public static Excel FromDataTable(DataTable Table)
+        public static SpreadsheetWriter FromDataTable(DataTable Table)
         {
             return FromDataTable(Table, true, true);
         }
 
-        public static Excel FromDataTable(DataTable Table, bool Xml, bool FormatEmptyCells)
+        public static SpreadsheetWriter FromDataTable(DataTable Table, bool Xml, bool FormatEmptyCells)
         {
             if (Table == null) return null;
 
-            Excel ex = new Excel(Xml);
+            SpreadsheetWriter ex = new SpreadsheetWriter(Xml);
 
             int iStyleBold = ex.AddStyle(new ExcelSheetStyle { Font = new Font { Bold = true } });
             int iStyleInt = ex.AddStyle(new ExcelSheetStyle { NumberFormat = NumberFormat.GeneralNumber });

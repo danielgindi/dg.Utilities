@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace dg.Utilities
+namespace dg.Utilities.BBCode
 {
-    public class BBCode
+    /// <summary>
+    /// Written by danielgindi@gmail.com
+    /// </summary>
+    public class BBCodeParser
     {
-        public BBCode() { }
-        public BBCode(string[] KnownTags, ParseTagDelegate Delegate)
+        public BBCodeParser() { }
+        public BBCodeParser(string[] KnownTags, ParseTagDelegate Delegate)
         {
             this.KnownTags = KnownTags;
             this.Delegate = Delegate;
         }
-        public BBCode(string[] KnownTags)
+        public BBCodeParser(string[] KnownTags)
         {
             this.KnownTags = KnownTags;
         }
@@ -32,6 +35,7 @@ namespace dg.Utilities
         #region Properties
         private List<string> _KnownTags = new List<string>();
         private ParseTagDelegate _Delegate = null;
+        private string[] EmptyStringArray = new string[] { };
 
         /// <summary>
         /// List of known tags. Any tags not on this list will be ignored.
@@ -40,7 +44,7 @@ namespace dg.Utilities
         {
             get
             {
-                if (_KnownTags == null) return new string[] { };
+                if (_KnownTags == null) return EmptyStringArray;
                 else return _KnownTags.ToArray();
             }
             set
@@ -50,7 +54,7 @@ namespace dg.Utilities
                 string tag1;
                 foreach (string tag in value)
                 {
-                    tag1 = tag.Trim().ToLower();
+                    tag1 = tag.Trim().ToLowerInvariant();
                     if (tag1.Length == 0) continue;
                     if (tags.Contains(tag1)) continue;
                     tags.Add(tag1);
@@ -170,7 +174,7 @@ namespace dg.Utilities
                     }
                     else if (c == ']')
                     {
-                        beginTag = beginTag.ToLower();
+                        beginTag = beginTag.ToLowerInvariant();
                         if (!_KnownTags.Contains(beginTag))
                         { // This tag is unregistered, ignore it!
                             output.Append(input.Substring(retractPosition, (position - retractPosition + 1)));
@@ -186,7 +190,7 @@ namespace dg.Utilities
                     }
                     else
                     {
-                        beginTag = beginTag.ToLower();
+                        beginTag = beginTag.ToLowerInvariant();
                         if (!_KnownTags.Contains(beginTag))
                         { // This tag is unregistered, ignore it!
                             output.Append(input.Substring(retractPosition, (position - retractPosition + 1)));
@@ -328,7 +332,7 @@ namespace dg.Utilities
                     }
                     else if (c == ']')
                     {
-                        endTag = endTag.ToLower();
+                        endTag = endTag.ToLowerInvariant();
 
                         if (!_KnownTags.Contains(endTag))
                         { // This tag is unregistered, ignore it!

@@ -109,16 +109,4 @@ namespace dg.Utilities.Serialization
         }
         #endregion
     }
-
-    [Serializable()]
-    public class SerializableIntIntKey : SerializableDoubleKey<int, int>
-    {
-        public SerializableIntIntKey()
-        {
-        }
-        public SerializableIntIntKey(int A, int B)
-            : base(A, B)
-        {
-        }
-    }
 }
