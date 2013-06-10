@@ -1,29 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 namespace dg.Utilities
 {
     public static class Colors
     {
-        public static string GetCss(System.Drawing.Color Color, bool NumberSign = true)
+        private static CultureInfo InvariantCulture = CultureInfo.InvariantCulture;
+
+        public static string GetCss(System.Drawing.Color Color)
         {
             if (Color == System.Drawing.Color.Transparent) return @"transparent";
             if (Color == System.Drawing.Color.Empty) return @"";
-            if (NumberSign) return string.Format(@"#{0:x2}{1:x2}{2:x2}", Color.R, Color.G, Color.B);
-            else return string.Format(@"{0:x2}{1:x2}{2:x2}", Color.R, Color.G, Color.B);
+            return string.Format(InvariantCulture, @"#{0:x2}{1:x2}{2:x2}", Color.R, Color.G, Color.B);
+        }
+        public static string GetCss(System.Drawing.Color Color, bool NumberSign)
+        {
+            if (Color == System.Drawing.Color.Transparent) return @"transparent";
+            if (Color == System.Drawing.Color.Empty) return @"";
+            if (NumberSign) return string.Format(InvariantCulture, @"#{0:x2}{1:x2}{2:x2}", Color.R, Color.G, Color.B);
+            else return string.Format(InvariantCulture, @"{0:x2}{1:x2}{2:x2}", Color.R, Color.G, Color.B);
         }
         public static string GetCssRgb(System.Drawing.Color Color)
         {
             if (Color == System.Drawing.Color.Transparent) return @"transparent";
             if (Color == System.Drawing.Color.Empty) return @"";
-            return string.Format(@"rgb({0},{1},{2})", Color.R, Color.G, Color.B);
+            return string.Format(InvariantCulture, @"rgb({0},{1},{2})", Color.R, Color.G, Color.B);
         }
         public static string GetCssRgba(System.Drawing.Color Color)
         {
             if (Color == System.Drawing.Color.Transparent) return @"transparent";
             if (Color == System.Drawing.Color.Empty) return @"";
-            return string.Format(@"rgba({0},{1},{2},{3:0.##})", Color.R, Color.G, Color.B, Color.A / 255.0);
+            return string.Format(InvariantCulture, @"rgba({0},{1},{2},{3:0.##})", Color.R, Color.G, Color.B, Color.A / 255.0);
         }
         public static System.Drawing.Color FromCss(string Css)
         {
@@ -37,10 +46,10 @@ namespace dg.Utilities
                     try
                     {
                         return System.Drawing.Color.FromArgb(
-                            (int)(Convert.ToDecimal(rgba[3].Trim()) * 255),
-                            Convert.ToInt32(rgba[0].Trim()),
-                            Convert.ToInt32(rgba[1].Trim()),
-                            Convert.ToInt32(rgba[2].Trim())
+                            (int)(Convert.ToDecimal(rgba[3].Trim(), InvariantCulture) * 255),
+                            Convert.ToInt32(rgba[0].Trim(), InvariantCulture),
+                            Convert.ToInt32(rgba[1].Trim(), InvariantCulture),
+                            Convert.ToInt32(rgba[2].Trim(), InvariantCulture)
                             );
                     }
                     catch { }
@@ -56,9 +65,9 @@ namespace dg.Utilities
                     try
                     {
                         return System.Drawing.Color.FromArgb(
-                              Convert.ToInt32(rgba[0].Trim()),
-                              Convert.ToInt32(rgba[1].Trim()),
-                              Convert.ToInt32(rgba[2].Trim())
+                              Convert.ToInt32(rgba[0].Trim(), InvariantCulture),
+                              Convert.ToInt32(rgba[1].Trim(), InvariantCulture),
+                              Convert.ToInt32(rgba[2].Trim(), InvariantCulture)
                               );
                     }
                     catch { }
@@ -77,9 +86,9 @@ namespace dg.Utilities
                 try
                 {
                     return System.Drawing.Color.FromArgb(
-                        Int32.Parse(Css.Substring(0, 2), System.Globalization.NumberStyles.HexNumber),
-                        Int32.Parse(Css.Substring(2, 2), System.Globalization.NumberStyles.HexNumber),
-                        Int32.Parse(Css.Substring(4, 2), System.Globalization.NumberStyles.HexNumber)
+                        Int32.Parse(Css.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture),
+                        Int32.Parse(Css.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture),
+                        Int32.Parse(Css.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture)
                         );
                 }
                 catch
