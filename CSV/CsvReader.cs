@@ -48,7 +48,7 @@ namespace dg.Utilities.CSV
             {
                 if (null == StreamReader)
                 {
-                    StreamReader = new StreamReader(_Stream, Encoding.UTF8, true);
+                    StreamReader = new StreamReader(_Stream, Encoding.Default, true);
                 }
 
                 List<string> columns = new List<string>();
