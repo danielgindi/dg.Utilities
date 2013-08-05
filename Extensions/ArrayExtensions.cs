@@ -32,5 +32,14 @@ namespace dg.Utilities
             }
             return (T[])(newArray.ToArray(typeof(T)));
         }
+        public static T[] Remove<T>(this T[] input, T item)
+        {
+            ArrayList newArray = new ArrayList();
+            foreach (T t in input)
+            {
+                if (!t.Equals(item)) newArray.Add(t);
+            }
+            return (T[])(newArray.ToArray(typeof(T)));
+        }
     }
 }
