@@ -191,7 +191,7 @@
     <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="General Utilities\Folders.cs" />
     <Compile Include="General Utilities\Mail.cs" />
-    <Compile Include="CSV\CsvReader.cs" />
+    <Compile Include="Csv\CsvReader.cs" />
     <Compile Include="Encryption\TeaEncryptor.cs" />
     <Compile Include="General Utilities\EnumStrings.cs" />
     <Compile Include="Spreadsheet\SpreadsheetWriter.cs" />
