@@ -335,7 +335,7 @@ namespace dg.Utilities
 
         public static bool IsValidEmail(string email)
         {
-            return Regex.IsMatch(email, @"^[A-Z0-9\._%+\-]+@[A-Z0-9\-]+(\.[A-Z0-9\-]+)*$", RegexOptions.IgnoreCase);
+            return Regex.IsMatch(email, @"^[A-Z0-9\._%+\-]+@[A-Z0-9\-]+(\.[A-Z0-9\-]+)*$", RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
         }
 
         /// <summary>
@@ -347,8 +347,8 @@ namespace dg.Utilities
         /// <returns>normalized email address, or null if invalid</returns>
         public static string NormalizeEmail(string email)
         {
+            email = email.Trim().ToLowerInvariant();
             if (!IsValidEmail(email)) return null;
-            email = email.ToLowerInvariant();
             int idx = email.IndexOf(@"@");
             string un = email.Substring(0, idx);
             string domain = email.Substring(idx);
