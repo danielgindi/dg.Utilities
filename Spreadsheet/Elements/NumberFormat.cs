@@ -6,6 +6,7 @@ namespace dg.Utilities.Spreadsheet
 {
     public struct NumberFormat
     {
+        public const string Automatic = @"";
         public const string General = @"General";
         public const string GeneralNumber = @"General Number";
         public const string GeneralDate = @"General Date";
