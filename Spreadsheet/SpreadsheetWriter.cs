@@ -64,7 +64,7 @@ namespace dg.Utilities.Spreadsheet
         {
             get
             {
-                if (IsXml) return "Xml";
+                if (IsXml) return "xml";
                 else return "csv";
             }
         }
@@ -561,9 +561,16 @@ namespace dg.Utilities.Spreadsheet
                 Write("/>\n"); // Closing tag
             }
 
-            if (style.NumberFormat != null && style.NumberFormat.Length > 0)
+            if (style.NumberFormat != null)
             {
-                Write(string.Format(@"<ss:NumberFormat ss:Format=""{0}""/>", style.NumberFormat));
+                if (style.NumberFormat.Length > 0)
+                {
+                    Write(string.Format(@"<ss:NumberFormat ss:Format=""{0}""/>", style.NumberFormat));
+                }
+                else
+                {
+                    Write(@"<ss:NumberFormat />");
+                }
             }
 
             if (style.Borders != null && style.Borders.Count > 0)
@@ -877,7 +884,7 @@ namespace dg.Utilities.Spreadsheet
             Columns.Add(strCol);
         }
 
-        public void SetCell(string Data, int StyleIndex = -1, bool FormatFromStyle = false, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(string Data, int StyleIndex = -1, bool FormatFromStyle = true, int MergeAcross = 0, int MergeDown = 0)
         {
             if (IsXml)
             {
@@ -1000,11 +1007,11 @@ namespace dg.Utilities.Spreadsheet
                     );
                 if (StyleIndex != -1)
                 {
-                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", StyleIndex + 21, merge, Data));
                 }
                 else
                 {
-                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, Data));
                 }
             }
             else
@@ -1029,11 +1036,11 @@ namespace dg.Utilities.Spreadsheet
                     );
                 if (StyleIndex != -1)
                 {
-                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", StyleIndex + 21, merge, Data));
                 }
                 else
                 {
-                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{12:G29}</Data></Cell>\n", merge, Data));
                 }
             }
             else
