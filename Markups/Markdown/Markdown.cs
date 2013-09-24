@@ -223,7 +223,7 @@ namespace MarkdownSharp
             get { return _autoNewlines; }
             set { _autoNewlines = value; }
         }
-        private bool _autoNewlines = true;
+        private bool _autoNewlines = false;
 
         /// <summary>
         /// when true, (most) bare plain URLs are auto-hyperlinked  
