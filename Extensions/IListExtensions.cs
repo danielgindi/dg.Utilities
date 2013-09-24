@@ -75,5 +75,40 @@ namespace dg.Utilities
             }
             return input;
         }
+
+        public static List<T[]> ColumnizeByCols<T>(this IList<T> input, int columnCount)
+        {
+            int rows;
+            List<T> column;
+            List<T[]> columns = new List<T[]>();
+
+            rows = input.Count / columnCount;
+
+            if (columnCount * rows != input.Count)
+            {
+                rows++;
+            }
+
+            int matrixX;
+            int matrixY;
+            int index = 0;
+            for (matrixX = 0; matrixX < columnCount; matrixX++)
+            {
+                column = new List<T>();
+                for (matrixY = 0; matrixY < rows; matrixY++)
+                {
+                    if (input.Count + matrixX + 1 - (index + columnCount) == 0 && matrixY != 0)
+                    {
+                        continue;
+                    }
+
+                    column.Add(input[index]);
+                    index++;
+                }
+                columns.Add(column.ToArray());
+            }
+
+            return columns;
+        }
     }
 }
