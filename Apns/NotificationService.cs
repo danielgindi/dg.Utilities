@@ -139,7 +139,6 @@ namespace dg.Utilities.Apns
                     {
                         List<NotificationDeliveryError> errors = notificationChannel.SendToApple(queue);
                         NotificationPayload payload;
-                        APNSErrorDelegate errorDelegate;
                         foreach (NotificationDeliveryError error in errors)
                         {
                             payload = error.Payload;
@@ -147,9 +146,7 @@ namespace dg.Utilities.Apns
                             {
                                 if (payload.ContextData != null && payload.ContextData is APNSErrorDelegate)
                                 {
-                                    errorDelegate = (APNSErrorDelegate)payload.ContextData;
-                                    errorDelegate();
-                                    queue.Remove(payload);
+                                    ((APNSErrorDelegate)payload.ContextData)();
                                 }
                             }
                         }

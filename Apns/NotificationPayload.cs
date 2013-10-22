@@ -178,14 +178,14 @@ namespace dg.Utilities.Apns
 
             string rawString = json.ToString();
 
-            StringBuilder encodedString = new StringBuilder();
+            /*StringBuilder encodedString = new StringBuilder();
             foreach (char c in rawString)
             {
                 if ((int)c < 32 || (int)c > 127)
                     encodedString.Append("\\u" + String.Format("{0:x4}", Convert.ToUInt32(c)));
                 else
                     encodedString.Append(c);
-            }
+            }*/
             return rawString;// encodedString.ToString();
         }
         protected void AppendJArray(StringBuilder sb, object[] array)
