@@ -58,6 +58,10 @@
     <Compile Include="Apns\NotificationChannel.cs" />
     <Compile Include="Apns\NotificationDeliveryError.cs" />
     <Compile Include="Apns\NotificationPayload.cs" />
+    <Compile Include="GoogleCloudMessaging\NotificationSender.cs" />
+    <Compile Include="GoogleCloudMessaging\NotificationDeliveryResult.cs" />
+    <Compile Include="GoogleCloudMessaging\NotificationPayload.cs" />
+    <Compile Include="GoogleCloudMessaging\HttpNotificationService.cs" />
     <Compile Include="Markups\Markdown\Markdown.cs" />
     <Compile Include="Serialization\SerializableLongLongKey.cs" />
     <Compile Include="Serialization\SerializableIntIntKey.cs" />
