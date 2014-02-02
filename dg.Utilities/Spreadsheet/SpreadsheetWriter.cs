@@ -126,6 +126,11 @@ namespace dg.Utilities.Spreadsheet
 
         public static SpreadsheetWriter FromDataTable(DataTable Table, bool Xml, bool FormatEmptyCells)
         {
+            return FromDataTable(Table, Xml, FormatEmptyCells, Xml ? @"Exported" : null);
+        }
+
+        public static SpreadsheetWriter FromDataTable(DataTable Table, bool Xml, bool FormatEmptyCells, string WorksheetName)
+        {
             if (Table == null) return null;
 
             SpreadsheetWriter ex = new SpreadsheetWriter(Xml);
@@ -137,7 +142,7 @@ namespace dg.Utilities.Spreadsheet
             int iCols = Table.Columns.Count;
 
             ex.BeginFile();
-            ex.NewWorksheet("Exported");
+            ex.NewWorksheet(WorksheetName);
 
             for (int iCol = 0; iCol < iCols; iCol++)
             {
