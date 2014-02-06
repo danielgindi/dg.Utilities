@@ -6,6 +6,7 @@ using System.IO;
 using System.Web.Hosting;
 using System.Text.RegularExpressions;
 using System.Globalization;
+using System.Security.AccessControl;
 
 namespace dg.Utilities
 {
@@ -223,6 +224,11 @@ namespace dg.Utilities
             }
         }
 
+        /// <summary>
+        /// Creates an empty file in the TEMP folder.
+        /// Note that you might want to reset the file's permissions after moving, because it has the permissions of the TEMP folder.
+        /// </summary>
+        /// <returns>Path to the temp file that was created</returns>
         public static string CreateEmptyTempFile()
         {
             string tempFilePath = Folders.GetTempDir() + Guid.NewGuid().ToString() + @".tmp";
@@ -259,6 +265,21 @@ namespace dg.Utilities
                 return tempFilePath;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Reset the file's permissions to it's parent folder's permissions
+        /// </summary>
+        /// <param name="filePath">Path to the target file</param>
+        public static void ResetFilePermissionsToInherited(string filePath)
+        {
+            FileSecurity fileSecurity = File.GetAccessControl(filePath);
+            fileSecurity.SetAccessRuleProtection(false, true);
+            foreach (FileSystemAccessRule rule in fileSecurity.GetAccessRules(true, false, typeof(System.Security.Principal.NTAccount)))
+            {
+                fileSecurity.RemoveAccessRule(rule);
+            }
+            File.SetAccessControl(filePath, fileSecurity);
         }
 
         public class TemporaryFileDeleter : IDisposable
