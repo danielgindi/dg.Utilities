@@ -665,6 +665,7 @@ namespace dg.Utilities.Imaging
                         {
                             if (System.IO.File.Exists(DestinationPath)) System.IO.File.Delete(DestinationPath);
                             System.IO.File.Move(tempFilePath, DestinationPath);
+                            Files.ResetFilePermissionsToInherited(DestinationPath);
                             temporaryFileDeleter.DoNotDelete();
                         }
                     }
@@ -785,6 +786,7 @@ namespace dg.Utilities.Imaging
                     {
                         if (System.IO.File.Exists(DestinationPath)) System.IO.File.Delete(DestinationPath);
                         System.IO.File.Move(tempFilePath, DestinationPath);
+                        Files.ResetFilePermissionsToInherited(DestinationPath);
                         temporaryFileDeleter.DoNotDelete();
                     }
                 }
