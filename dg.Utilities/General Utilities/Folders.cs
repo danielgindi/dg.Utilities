@@ -138,35 +138,38 @@ namespace dg.Utilities
             string path = null;
             try
             {
-                path = Environment.GetEnvironmentVariable("TEMP");
-                if (path == null || path.Length == 0)
-                {
-                    path = Environment.GetEnvironmentVariable("TMP");
-                }
-                if (path == null || path.Length == 0)
-                {
-                    path = Environment.GetEnvironmentVariable("WINDIR");
-                    if (path != null && path.Length > 0)
-                    {
-                        path = Path.Combine(path, @"TEMP");
-                    }
-                }
+                path = System.IO.Path.GetTempPath();
             }
             catch
             {
+                try
+                {
+                    // Fallback 1
+                    path = Environment.GetEnvironmentVariable("TEMP");
+                    if (path == null || path.Length == 0)
+                    {
+                        // Fallback 2
+                        path = Environment.GetEnvironmentVariable("TMP");
+                    }
+                    if (path == null || path.Length == 0)
+                    {
+                        // Fallback 3
+                        path = Environment.GetEnvironmentVariable("WINDIR");
+                        if (path != null && path.Length > 0)
+                        {
+                            path = Path.Combine(path, @"TEMP");
+                        }
+                    }
+                }
+                catch
+                {
+                }
             }
             if (path == null || path.Length == 0)
             {
-                if (HttpContext.Current != null)
-                {
-                    path = HttpContext.Current.Server.MapPath(@"~/");
-                }
-                else
-                {
-                    path = Files.MapPath(path);
-                }
+                // Fallback 4
+                path = HttpContext.Current.Server.MapPath(@"~/temp/dg.Utilities");
             }
-            path = Path.Combine(path, @"dcgEngine\");
             if (!path.EndsWith(@"/") && !path.EndsWith(@"\"))
             {
                 if (path.IndexOf('/') > -1) path += '/';
