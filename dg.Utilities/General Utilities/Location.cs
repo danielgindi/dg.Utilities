@@ -27,10 +27,9 @@ namespace dg.Utilities
 
             double a = Math.Sin(dLat / 2.0);
             a *= a;
-            a += Math.Cos(lat1) * Math.Cos(lat2);
             double c = Math.Sin(dLon / 2.0);
             c *= c;
-            a *= c;
+            a += c * Math.Cos(lat1) * Math.Cos(lat2);
             c = 2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a));
             double d = AVERAGE_KM_EARTH_RADIUS * c;
 
