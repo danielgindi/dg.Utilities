@@ -58,6 +58,7 @@
     <Compile Include="Apns\NotificationChannel.cs" />
     <Compile Include="Apns\NotificationDeliveryError.cs" />
     <Compile Include="Apns\NotificationPayload.cs" />
+    <Compile Include="General Utilities\Youtube.cs" />
     <Compile Include="GoogleCloudMessaging\NotificationSender.cs" />
     <Compile Include="GoogleCloudMessaging\NotificationDeliveryResult.cs" />
     <Compile Include="GoogleCloudMessaging\NotificationPayload.cs" />
