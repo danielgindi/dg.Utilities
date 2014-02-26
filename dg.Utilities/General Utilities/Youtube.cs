@@ -13,7 +13,7 @@ namespace dg.Utilities
         /// </summary>
         public static string GetYoutubeId(string url)
         {
-            Match match = Regex.Match(url, "^https?\\:\\/\\/www\\.youtube\\.com\\/(watch\\?v=|v\\/|embed\\/)([^&/]+)", RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
+            Match match = Regex.Match(url, @"\/\/www\.youtube\.com\/(watch\?v=|v\/|embed\/)([^&/]+)", RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
             if (match != null && match.Groups.Count > 2)
             {
                 return match.Groups[2].Value;
@@ -24,65 +24,65 @@ namespace dg.Utilities
         /// <summary>
         /// Generates the maximum resolution image url for a youtube-id
         /// </summary>
-        public static string GetYoutubeMaxResDefaultImageUrl(string youtubeId)
+        public static string GetYoutubeMaxResDefaultImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/maxresdefault.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/maxresdefault.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the 1st default low-res image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeThumbnail0ImageUrl(string youtubeId)
+        public static string GetYoutubeThumbnail0ImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/default.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/default.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the 2nd default low-res image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeThumbnail1ImageUrl(string youtubeId)
+        public static string GetYoutubeThumbnail1ImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/1.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/1.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the 3rd default low-res image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeThumbnail2ImageUrl(string youtubeId)
+        public static string GetYoutubeThumbnail2ImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/2.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/2.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the 4th default low-res image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeThumbnail3ImageUrl(string youtubeId)
+        public static string GetYoutubeThumbnail3ImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/3.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/3.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the default high-quality image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeHqDefaultImageUrl(string youtubeId)
+        public static string GetYoutubeHqDefaultImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/hqdefault.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/hqdefault.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the default medium-quality image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeMqDefaultImageUrl(string youtubeId)
+        public static string GetYoutubeMqDefaultImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/mqdefault.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/mqdefault.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
 
         /// <summary>
         /// Generates the default standard-definition image thumbnail url for a youtube-id
         /// </summary>
-        public static string GetYoutubeSdDefaultImageUrl(string youtubeId)
+        public static string GetYoutubeSdDefaultImageUrl(string youtubeId, bool httpRooted = true)
         {
-            return string.Format(@"http://img.youtube.com/vi/{0}/sddefault.jpg", youtubeId);
+            return string.Format(@"{0}//img.youtube.com/vi/{1}/sddefault.jpg", httpRooted ? @"http:" : "", youtubeId);
         }
     }
 }
