@@ -13,7 +13,7 @@ namespace dg.Utilities
         /// </summary>
         public static string GetYoutubeId(string url)
         {
-            Match match = Regex.Match(url, @"\/\/www\.youtube\.com\/(watch\?v=|v\/|embed\/)([^&/]+)", RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
+            Match match = Regex.Match(url, @"\/\/www\.youtube\.com\/(watch\?v=|v\/|embed\/)([^&/""> ]+)", RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
             if (match != null && match.Groups.Count > 2)
             {
                 return match.Groups[2].Value;
