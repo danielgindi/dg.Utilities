@@ -380,29 +380,56 @@ namespace dg.Utilities.Imaging
 
         #endregion
 
-        public static Size GetImageSize(String imgPath)
+        public static Size GetImageSize(String pathToImage)
         {
-            if (imgPath == null) return Size.Empty;
+            if (pathToImage == null) return Size.Empty;
+
+            return ImageDimensionsParser.GetImageSize(pathToImage);
+        }
+
+        public static void ApplyExifOrientation(Image image, bool removeExifOrientationTag)
+        {
+            if (image == null) return;
 
             try
             {
-                using (Image img = Image.FromFile(imgPath))
+                PropertyItem item = image.GetPropertyItem((int)ExifPropertyTag.PropertyTagOrientation);
+                if (item != null)
                 {
-                    return new Size((Int32)img.Width, (Int32)img.Height);
+                    switch (item.Value[0])
+                    {
+                        default:
+                        case 1:
+                            break;
+                        case 2:
+                            image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                            break;
+                        case 3:
+                            image.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                            break;
+                        case 4:
+                            image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                            break;
+                        case 5:
+                            image.RotateFlip(RotateFlipType.Rotate270FlipX);
+                            break;
+                        case 6:
+                            image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                            break;
+                        case 7:
+                            image.RotateFlip(RotateFlipType.Rotate90FlipX);
+                            break;
+                        case 8:
+                            image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                            break;
+                    }
+                    if (removeExifOrientationTag)
+                    {
+                        image.RemovePropertyItem(item.Id);
+                    }
                 }
             }
-            catch (System.IO.IOException)
-            {
-                return Size.Empty;
-            }
-            catch (OutOfMemoryException)
-            {
-                return Size.Empty;
-            }
-            catch (ArgumentException)
-            {
-                return Size.Empty;
-            }
+            catch { }
         }
 
         private static Color FixTransparentBgColor(Color Color, ImageFormat DestinationFormat)
@@ -531,6 +558,8 @@ namespace dg.Utilities.Imaging
                 }
                 using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(SourcePath))
                 {
+                    ApplyExifOrientation(imgOriginal, true);
+
                     if (DestinationFormat == null) DestinationFormat = imgOriginal.RawFormat;
 
                     BackgroundColor = FixTransparentBgColor(BackgroundColor, DestinationFormat);
@@ -734,6 +763,8 @@ namespace dg.Utilities.Imaging
             if (DestinationPath == null) DestinationPath = SourcePath;
             using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(SourcePath))
             {
+                ApplyExifOrientation(imgOriginal, true);
+
                 string tempFilePath = Files.CreateEmptyTempFile();
 
                 bool retValue = ProcessImageToFile(imgOriginal, DestinationPath, DestinationFormat, 100L, delegate(Image frame)
