@@ -1081,15 +1081,15 @@
         /// <summary>
         /// Image orientation viewed in terms of rows and columns.
         /// PropertyTagOrientation Setting			Description
-        /// 1										The 0th row is at the top of the visual image, and the 0th column is the visual left side.
-        /// 2										The 0th row is at the visual top of the image, and the 0th column is the visual right side.
-        /// 3										The 0th row is at the visual bottom of the image, and the 0th column is the visual right side.
-        /// 4										The 0th row is at the visual bottom of the image, and the 0th column is the visual right side.
-        /// 5										The 0th row is the visual left side of the image, and the 0th column is the visual top.
-        /// 6										The 0th row is the visual right side of the image, and the 0th column is the visual top.
-        /// 7										The 0th row is the visual right side of the image, and the 0th column is the visual bottom.
-        /// 8										The 0th row is the visual left side of the image, and the 0th column is the visual bottom.
-        ///  
+        /// 1										Horizontal (normal) 
+        /// 2										Mirror horizontal
+        /// 3										Rotate 180
+        /// 4										Mirror vertical
+        /// 5										Mirror horizontal and rotate 270 CW
+        /// 6										Rotate 90 CW
+        /// 7										Mirror horizontal and rotate 90 CW
+        /// 8										Rotate 270 CW
+        /// 
         ///  PropertyTagTypeShort * 1
         /// </summary>
         PropertyTagOrientation = 0x0112,
