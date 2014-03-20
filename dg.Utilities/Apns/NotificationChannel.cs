@@ -17,7 +17,7 @@ namespace dg.Utilities.Apns
 
         private TcpClient _apnsClient;
         private SslStream _apnsStream;
-        private ManualResetEvent mre = new ManualResetEvent(false);
+        private ManualResetEvent _manualResetEvent = new ManualResetEvent(false);
         private X509Certificate _certificate;
         private X509CertificateCollection _certificates;
 
@@ -36,7 +36,7 @@ namespace dg.Utilities.Apns
         private const int FeedbackPort = 2196;
 
         private bool _connected = false;
-        private bool _faulted = false;
+        private bool _connectionReturnedError = false;
         private int _current = 0;
 
         private readonly string _host;
@@ -56,10 +56,10 @@ namespace dg.Utilities.Apns
             if (disposing)
             {
                 Disconnect();
-                if (mre != null)
+                if (_manualResetEvent != null)
                 {
-                    mre.Dispose();
-                    mre = null;
+                    _manualResetEvent.Dispose();
+                    _manualResetEvent = null;
                 }
             }
             // Now clean up Native Resources (Pointers)
@@ -135,20 +135,23 @@ namespace dg.Utilities.Apns
 
         private bool SendQueueToApple()
         {
-            _faulted = false;
-            mre.Reset();
+            _connectionReturnedError = false;
+            _manualResetEvent.Reset();
 
             int PayloadId = 0;
             MyAsyncInfo info = null;
             IAsyncResult ar = null;
             NotificationPayload payload;
             byte[] payloadBytes;
-            while (!_faulted && _current < _notifications.Count)
+            bool didConnect = false;
+
+            while (!_connectionReturnedError && _current < _notifications.Count)
             {
                 if (!_connected)
                 {
                     Connect(_host, NotificationPort, _certificates);
                     info = new MyAsyncInfo(_apnsStream);
+                    didConnect = true;
                     ar = _apnsStream.BeginRead(info.ReadBuffer, 0, 6, OnAsyncRead, info);
                 }
                 payload = _notifications[_current];
@@ -169,7 +172,7 @@ namespace dg.Utilities.Apns
                     continue;
                 }
 
-                if (payloadBytes != null && !_faulted)
+                if (payloadBytes != null && !_connectionReturnedError)
                 {
                     try
                     {
@@ -206,8 +209,11 @@ namespace dg.Utilities.Apns
                     _apnsStream.Dispose();
                 }
             }
-            mre.WaitOne();
-            return !_faulted;
+            if (didConnect)
+            {
+                _manualResetEvent.WaitOne();
+            }
+            return !_connectionReturnedError;
         }
 
         private void OnAsyncRead(IAsyncResult ar)
@@ -219,7 +225,7 @@ namespace dg.Utilities.Apns
                 if (info.MyStream.EndRead(ar) == 6 && info.ReadBuffer[0] == 8)
                 {
                     DeliveryErrorType error = (DeliveryErrorType)info.ReadBuffer[1];
-                    _faulted = true;
+                    _connectionReturnedError = true;
                     int index = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(info.ReadBuffer, 2));
                     NotificationPayload faultedNotification = _notifications[index];
                     _errors.Add(new NotificationDeliveryError(error, faultedNotification));
@@ -242,13 +248,13 @@ namespace dg.Utilities.Apns
             catch (Exception ex)
             {
                 _connected = false;
-                _faulted = true;
+                _connectionReturnedError = true;
                 if (generalSwitch.TraceError)
                 {
                     Debug.WriteLine("Apns: ERROR: An error occurred while reading Apple response for token {0} - {1}", _notifications[payLoadIndex].DeviceToken, ex.Message);
                 }
             }
-            mre.Set();
+            _manualResetEvent.Set();
         }
 
         private void Connect(string host, int port, X509CertificateCollection certificates)
