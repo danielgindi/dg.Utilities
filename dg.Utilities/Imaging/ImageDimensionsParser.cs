@@ -19,7 +19,10 @@ namespace dg.Utilities.Imaging
         {
             byte[] buffer = new byte[4];
 
-            while (stream.Read(buffer, 0, 2) == 2 && buffer[0] == 0xFF && (buffer[1] >= 0xE0 && buffer[1] <= 0xEF))
+            while (stream.Read(buffer, 0, 2) == 2 && buffer[0] == 0xFF &&
+                ((buffer[1] >= 0xE0 && buffer[1] <= 0xEF) ||
+                buffer[1] == 0xDB ||
+                buffer[1] == 0xC0))
             {
                 if (buffer[1] == 0xE1)
                 { // Parse APP1 EXIF
@@ -150,6 +153,17 @@ namespace dg.Utilities.Imaging
                     }
 
                     return Size.Empty;
+                }
+                else if (buffer[1] == 0xE1)
+                { // Parse SOF0 (Start of Frame baseline)
+            
+                    // Skip LF, P
+                    stream.Seek(3, SeekOrigin.Current);
+            
+                    // Read Y,X
+                    if (stream.Read(buffer, 0, 4) != 4) return Size.Empty;
+
+                    return new Size(buffer[2] << 8 | buffer[3], buffer[0] << 8 | buffer[1]);
                 }
                 else
                 { // Skip APPn segment
