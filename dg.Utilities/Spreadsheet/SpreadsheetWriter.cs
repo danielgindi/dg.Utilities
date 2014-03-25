@@ -73,7 +73,7 @@ namespace dg.Utilities.Spreadsheet
         {
             get
             {
-                if (IsXml) return "text/Xml";
+                if (IsXml) return "text/xml";
                 else return "application/vnd.ms-excel";
             }
         }
@@ -322,7 +322,7 @@ namespace dg.Utilities.Spreadsheet
             }
             if (IsXml)
             {
-                Write("<?Xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                Write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
                 Write("<?mso-application progid=\"Excel.Sheet\"?>\n");
                 Write("<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\"\n");
                 Write(" xmlns:o=\"urn:schemas-microsoft-com:office:office\"\n");
