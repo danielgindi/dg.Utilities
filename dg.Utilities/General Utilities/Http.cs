@@ -204,6 +204,11 @@ namespace dg.Utilities
             }
         }
 
+        public static bool IsCurrentRequestFromMobileBrowser()
+        {
+            return Regex.IsMatch(HttpContext.Current.Request.UserAgent, @"(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
+        }
+
         /// <summary>
         /// Find out if the request is from a user browser and not crawler. 
         /// Good to use when need to address users, not for addressing crawlers.
