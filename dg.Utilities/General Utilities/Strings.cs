@@ -265,7 +265,7 @@ namespace dg.Utilities
             if (alphaNumericOnly) chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
             else chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!#%&()@${[]}";
             string randomString = "";
-            Random rnd = new Random();
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
             while (length-- > 0)
             {
                 randomString += chars[rnd.Next(chars.Length)];
@@ -282,7 +282,7 @@ namespace dg.Utilities
         public static string GenerateRandomString(string possibleCharacters, int length)
         {
             string randomString = "";
-            Random rnd = new Random();
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
             while (length-- > 0)
             {
                 randomString += possibleCharacters[rnd.Next(possibleCharacters.Length)];
@@ -299,7 +299,7 @@ namespace dg.Utilities
         public static string GenerateRandomString(char[] possibleCharacters, int length)
         {
             string randomString = "";
-            Random rnd = new Random();
+            Random rnd = new Random(Guid.NewGuid().GetHashCode());
             while (length-- > 0)
             {
                 randomString += possibleCharacters[rnd.Next(possibleCharacters.Length)];

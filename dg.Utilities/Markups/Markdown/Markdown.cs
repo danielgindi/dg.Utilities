@@ -1586,7 +1586,7 @@ namespace MarkdownSharp
         private string EncodeEmailAddress(string addr)
         {
             var sb = new StringBuilder(addr.Length * 5);
-            var rand = new Random();
+            var rand = new Random(Guid.NewGuid().GetHashCode());
             int r;
             foreach (char c in addr)
             {
