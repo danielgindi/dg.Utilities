@@ -67,7 +67,7 @@ namespace dg.Utilities.GoogleCloudMessaging
                 if (!timer.IsStarted)
                 {
                     timer.Milliseconds = GCM_TIMER_MS;
-                    timer.Elapsed += DoSendApnsQueue;
+                    timer.Elapsed += DoSendGcmQueue;
                     timer.Start();
                 }
             }
@@ -107,7 +107,7 @@ namespace dg.Utilities.GoogleCloudMessaging
             SendMessage(payload, Result);
         }
 
-        private void DoSendApnsQueue(Object sender, EventArgs e)
+        private void DoSendGcmQueue(Object sender, EventArgs e)
         {
             List<HttpNotificationPayload> queue = null;
             lock (currentQueue)
