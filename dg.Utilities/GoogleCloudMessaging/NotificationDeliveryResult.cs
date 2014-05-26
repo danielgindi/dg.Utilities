@@ -9,6 +9,9 @@ namespace dg.Utilities.GoogleCloudMessaging
     {
         public NotificationDeliveryResult(HttpNotificationPayload Payload, HttpStatusCode HttpStatusCode, string Response)
         {
+            this.Payload = Payload;
+            this.HttpStatusCode = HttpStatusCode;
+            this.Response = Response;
         }
 
         public HttpStatusCode HttpStatusCode { get; private set; }
