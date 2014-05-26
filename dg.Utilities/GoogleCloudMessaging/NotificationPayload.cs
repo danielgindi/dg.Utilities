@@ -105,9 +105,12 @@ namespace dg.Utilities.GoogleCloudMessaging
             {
                 if (!first) json.Append(','); else first = false;
                 json.Append(@"""data"":{");
+
+                bool subFirst = true;
                 foreach (string key in Data.Keys)
                 {
-                    json.Append(@",""");
+                    if (!subFirst) json.Append(','); else subFirst = false;
+                    json.Append(@"""");
                     json.Append(key);
                     json.Append(@""":");
                     if (Data[key].Length == 1)
@@ -119,6 +122,7 @@ namespace dg.Utilities.GoogleCloudMessaging
                         AppendJArray(json, Data[key]);
                     }
                 }
+
                 json.Append(@"}");
             }
 
