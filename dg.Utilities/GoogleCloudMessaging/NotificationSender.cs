@@ -31,25 +31,49 @@ namespace dg.Utilities.GoogleCloudMessaging
                 dataStream.Write(byteArray, 0, byteArray.Length);
             }
 
-            using (HttpWebResponse webResponse = webRequest.GetResponse() as HttpWebResponse)
-            {
-                using (Stream responseStream = webResponse.GetResponseStream())
-                {
-                    using (StreamReader streamReader = new StreamReader(responseStream))
-                    {
-                        string responseText = streamReader.ReadToEnd();
+            HttpWebResponse webResponse = null;
+            NotificationDeliveryResult result = null;
 
-                        switch (webResponse.StatusCode)
+            try
+            {
+                webResponse = webRequest.GetResponse() as HttpWebResponse;
+            }
+            catch (WebException ex)
+            {
+                webResponse = ex.Response as HttpWebResponse;
+            }
+            finally
+            {
+                if (webResponse != null)
+                {
+                    try
+                    {
+                        using (Stream responseStream = webResponse.GetResponseStream())
                         {
-                            default:
-                            case HttpStatusCode.OK: // Should parse JSON result
-                            case HttpStatusCode.BadRequest: // JSON malformed
-                            case HttpStatusCode.Unauthorized: // API Key unauthorized
-                                return new NotificationDeliveryResult(Payload, webResponse.StatusCode, responseText);
+                            using (StreamReader streamReader = new StreamReader(responseStream))
+                            {
+                                string responseText = streamReader.ReadToEnd();
+
+                                switch (webResponse.StatusCode)
+                                {
+                                    default:
+                                    case HttpStatusCode.OK: // Should parse JSON result
+                                    case HttpStatusCode.BadRequest: // JSON malformed
+                                    case HttpStatusCode.Unauthorized: // API Key unauthorized
+                                        result = new NotificationDeliveryResult(Payload, webResponse.StatusCode, responseText);
+                                        break;
+                                }
+                            }
                         }
+                    }
+                    finally
+                    {
+                        webResponse.Close();
                     }
                 }
             }
+
+            return result;
         }
     }
 }
