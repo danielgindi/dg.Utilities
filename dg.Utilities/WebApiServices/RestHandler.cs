@@ -8,20 +8,34 @@ using System.Net;
 
 namespace dg.Utilities.WebApiServices
 {
+    /// <summary>
+    /// Supports Backbone-style with some additional sugar.
+    /// 
+    /// :name_param
+    /// :named_digits_param
+    /// *wildcard_including_backslashes
+    /// (optional_param)
+    /// 
+    /// Examples:
+    /// 
+    /// help => help
+    /// search/:query => search/kiwis
+    /// search/:query/p:page => search/kiwis/p7 and search/kiwis/plast
+    /// search/:query/p#page => search/kiwis/p7
+    /// file/*path => file/nested/folder/file.txt
+    /// docs/:section(/:subsection) => docs/faq and docs/faq/installing
+    /// </summary>
     public abstract class RestHandler : IHttpHandler
     {
-        public RestHandler(RestHandlerRoute[] Routes)
+        public RestHandler(Dictionary<string, List<RestHandlerRoute>> routes)
         {
-            this.Routes = Routes;
+            this.Routes = routes;
         }
         public RestHandler()
         {
         }
 
         public bool IsReusable { get { return true; } }
-
-        private static char[] PATH_SEPARATOR = new char[] { '/' };
-        private static string[] EMPTY_STRING_ARRAY = new string[] { };
 
         public void ProcessRequest(System.Web.HttpContext context)
         {
@@ -30,143 +44,90 @@ namespace dg.Utilities.WebApiServices
 
             Response.ContentEncoding = Encoding.UTF8;
 
-            string HttpMethod = Request.HttpMethod;
+            string httpMethod = Request.HttpMethod;
+
+            IEnumerable<RestHandlerRoute> Routes;
+            if (this._Routes.ContainsKey(httpMethod))
+            {
+                Routes = this._Routes[httpMethod];
+            }
+            else
+            {
+                Response.StatusCode = (int)_DefaultStatusCode;
+                Response.End();
+                return;
+            }
 
             string path = Request.Url.AbsolutePath;
             if (_PathPrefix != null && path.StartsWith(_PathPrefix))
             {
                 path = path.Remove(0, _PathPrefix.Length);
             }
-            string[] pathParts = path.Split(PATH_SEPARATOR, StringSplitOptions.None);
 
-            RestHandlerRoute[] Routes = this._Routes;
-            int idx, count, partLen;
+            // Strip query string
+            int qIndex = path.IndexOf('?');
+            if (qIndex > -1)
+            {
+                path = path.Remove(qIndex);
+            }
+
+            Match match;
             ArrayList pathParams;
-            string part;
-            bool[] Wildcards;
-            bool[] PushParams;
-            Regex[] RouteRegexes;
-            bool SlashEnding = path.Length > 0 && path[path.Length - 1] == '/';
+            int i, len;
 
             foreach (RestHandlerRoute Route in Routes)
             {
-                count = Route.Route.Length;
-                if ((count != pathParts.Length && (!_AutomaticallyHandleEndingSlash || SlashEnding == Route.SlashEnding)) ||
-                    (_AutomaticallyHandleEndingSlash && SlashEnding != Route.SlashEnding &&
-                     ((SlashEnding && count != pathParts.Length - 1) || (!SlashEnding && count != pathParts.Length + 1))
-                    )) continue;
-                pathParams = null;
-                Wildcards = Route.Wildcards;
-                PushParams = Route.PushParams;
-                RouteRegexes = Route.RouteRegexes;
-                for (idx = 0; idx < count; idx++)
+                match = Route.Pattern.Match(path);
+                if (!match.Success) continue;
+
+                pathParams = new ArrayList();
+                for (i = 1, len = match.Groups.Count; i<len; i++)
                 {
-                    part = Route.Route[idx];
-                    partLen = part.Length;
-                    if (_AutomaticallyHandleEndingSlash && idx == count - 1 && !SlashEnding && Route.SlashEnding)
-                    {
-                        continue; // OK
-                    }
-                    if (Wildcards[idx])
-                    {
-                        if (PushParams[idx])
-                        {
-                            if (pathParams == null) pathParams = new ArrayList();
-                            pathParams.Add(pathParts[idx]);
-                        }
-                        continue; // OK
-                    }
-                    else if (RouteRegexes[idx] != null)
-                    {
-                        if (RouteRegexes[idx].IsMatch(pathParts[idx]))
-                        {
-                            if (PushParams[idx])
-                            {
-                                if (pathParams == null) pathParams = new ArrayList();
-                                pathParams.Add(pathParts[idx]);
-                            }
-                            continue; // OK
-                        }
-                    }
-                    else if (part == pathParts[idx])
-                    {
-                        if (PushParams[idx])
-                        {
-                            if (pathParams == null) pathParams = new ArrayList();
-                            pathParams.Add(pathParts[idx]);
-                        }
-                        continue; // OK
-                    }
-                    break; // FAIL
+                    if (match.Groups[i].Captures.Count == 0) continue;
+                    pathParams.Add(HttpUtility.UrlDecode(match.Groups[i].Captures[0].Value));
                 }
-                if (idx == count)
+
+                if (httpMethod == @"GET")
                 {
-                    if (HttpMethod == @"GET")
-                    {
-                        if (Route.HandleGet)
-                        {
-                            Route.Target.Get(Request, Response, pathParams == null ? EMPTY_STRING_ARRAY : (string[])pathParams.ToArray(typeof(string)));
-                            Response.End();
-                            break; // FINISHED
-                        }
-                        else
-                        {
-                            continue; // Next handler
-                        }
-                    }
-                    else if (HttpMethod == @"POST")
-                    {
-                        if (Route.HandlePost)
-                        {
-                            Route.Target.Post(Request, Response, pathParams == null ? EMPTY_STRING_ARRAY : (string[])pathParams.ToArray(typeof(string)));
-                            Response.End();
-                            break; // FINISHED
-                        }
-                        else
-                        {
-                            continue; // Next handler
-                        }
-                    }
-                    else if (HttpMethod == @"PUT")
-                    {
-                        if (Route.HandlePut)
-                        {
-                            Route.Target.Put(Request, Response, pathParams == null ? EMPTY_STRING_ARRAY : (string[])pathParams.ToArray(typeof(string)));
-                            Response.End();
-                            break; // FINISHED
-                        }
-                        else
-                        {
-                            continue; // Next handler
-                        }
-                    }
-                    else if (HttpMethod == @"DELETE")
-                    {
-                        if (Route.HandleDelete)
-                        {
-                            Route.Target.Delete(Request, Response, pathParams == null ? EMPTY_STRING_ARRAY : (string[])pathParams.ToArray(typeof(string)));
-                            Response.End();
-                            break; // FINISHED
-                        }
-                        else
-                        {
-                            continue; // Next handler
-                        }
-                    }
-                    else if (HttpMethod == @"HEAD")
-                    {
-                        if (Route.HandleHead)
-                        {
-                            Route.Target.Head(Request, Response, pathParams == null ? EMPTY_STRING_ARRAY : (string[])pathParams.ToArray(typeof(string)));
-                            Response.End();
-                            break; // FINISHED
-                        }
-                        else
-                        {
-                            continue; // Next handler
-                        }
-                    }
-                    continue; // Next handler
+                    Route.Target.Get(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"POST")
+                {
+                    Route.Target.Post(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"PUT")
+                {
+                    Route.Target.Put(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"DELETE")
+                {
+                    Route.Target.Delete(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"HEAD")
+                {
+                    Route.Target.Head(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"OPTIONS")
+                {
+                    Route.Target.Options(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
+                }
+                else if (httpMethod == @"PATCH")
+                {
+                    Route.Target.Patch(Request, Response, (string[])pathParams.ToArray(typeof(string)));
+                    Response.End();
+                    break; // FINISHED
                 }
             }
 
@@ -175,23 +136,16 @@ namespace dg.Utilities.WebApiServices
         }
 
         #region Variables
-        private RestHandlerRoute[] _Routes = new RestHandlerRoute[] { };
+        private Dictionary<string, List<RestHandlerRoute>> _Routes = new Dictionary<string, List<RestHandlerRoute>>();
         private HttpStatusCode _DefaultStatusCode = HttpStatusCode.NotImplemented;
         private string _PathPrefix = @"/";
-        private bool _AutomaticallyHandleEndingSlash = false;
         #endregion
 
         #region Properties
-        public RestHandlerRoute[] Routes
+        public Dictionary<string, List<RestHandlerRoute>> Routes
         {
-            get
-            {
-                return _Routes;
-            }
-            set
-            {
-                _Routes = value ?? new RestHandlerRoute[] { };
-            }
+            get { return _Routes; }
+            set { _Routes = value; }
         }
         public HttpStatusCode DefaultStatusCode
         {
@@ -210,28 +164,122 @@ namespace dg.Utilities.WebApiServices
                 _PathPrefix = value;
             }
         }
-        public bool AutomaticallyHandleEndingSlash
-        {
-            get { return _AutomaticallyHandleEndingSlash; }
-            set { _AutomaticallyHandleEndingSlash = value; }
-        }
+
         #endregion
 
         #region AddRoute
 
-        public void AddRoute(RestHandlerRoute Route)
+        public void AddRoute(string HttpMethod, RestHandlerRoute Route)
         {
-            List<RestHandlerRoute> routes = new List<RestHandlerRoute>(_Routes);
+            List<RestHandlerRoute> routes;
+            if (_Routes.ContainsKey(HttpMethod.ToUpperInvariant()))
+            {
+                routes = _Routes[HttpMethod.ToUpperInvariant()];
+            }
+            else
+            {
+                routes = new List<RestHandlerRoute>();
+                _Routes[HttpMethod.ToUpperInvariant()] = routes;
+            }
+
             routes.Add(Route);
-            _Routes = routes.ToArray();
         }
-        public void AddRoute(string[] Route, IRestHandlerTarget Target, bool HandleGet, bool HandlePost, bool HandlePut, bool HandleDelete, bool HandleHead)
+
+        public void Get(string route, IRestHandlerTarget target)
         {
-            AddRoute(new RestHandlerRoute(Route, Target, HandleGet, HandlePost, HandlePut, HandleDelete, HandleHead));
+            AddRoute(@"GET", new RestHandlerRoute(route, target));
         }
-        public void AddRoute(string Route, IRestHandlerTarget Target, bool HandleGet, bool HandlePost, bool HandlePut, bool HandleDelete, bool HandleHead)
+
+        public void Get(Regex routePattern, IRestHandlerTarget target)
         {
-            AddRoute(new RestHandlerRoute(Route, Target, HandleGet, HandlePost, HandlePut, HandleDelete, HandleHead));
+            AddRoute(@"GET", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Post(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"POST", new RestHandlerRoute(route, target));
+        }
+
+        public void Post(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"POST", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Put(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"PUT", new RestHandlerRoute(route, target));
+        }
+
+        public void Put(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"PUT", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Delete(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"DELETE", new RestHandlerRoute(route, target));
+        }
+
+        public void Delete(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"DELETE", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Head(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"HEAD", new RestHandlerRoute(route, target));
+        }
+
+        public void Head(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"HEAD", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Options(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"OPTIONS", new RestHandlerRoute(route, target));
+        }
+
+        public void Options(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"OPTIONS", new RestHandlerRoute(routePattern, target));
+        }
+
+        public void Patch(string route, IRestHandlerTarget target)
+        {
+            AddRoute(@"PATCH", new RestHandlerRoute(route, target));
+        }
+
+        public void Patch(Regex routePattern, IRestHandlerTarget target)
+        {
+            AddRoute(@"PATCH", new RestHandlerRoute(routePattern, target));
+        }
+
+        /// <summary>
+        /// Deprecated. here for backwards compatibility
+        /// </summary>
+        public void AddRoute(string route, IRestHandlerTarget target, bool handleGet, bool handlePost, bool handlePut, bool handleDelete, bool handleHead)
+        {
+            if (handleGet)
+            {
+                AddRoute(@"GET", RestHandlerRoute.FromOldRouteFormat(route, target));
+            }
+            if (handlePost)
+            {
+                AddRoute(@"POST", RestHandlerRoute.FromOldRouteFormat(route, target));
+            }
+            if (handlePut)
+            {
+                AddRoute(@"PUT", RestHandlerRoute.FromOldRouteFormat(route, target));
+            }
+            if (handleDelete)
+            {
+                AddRoute(@"DELETE", RestHandlerRoute.FromOldRouteFormat(route, target));
+            }
+            if (handleHead)
+            {
+                AddRoute(@"HEAD", RestHandlerRoute.FromOldRouteFormat(route, target));
+            }
         }
 
         #endregion

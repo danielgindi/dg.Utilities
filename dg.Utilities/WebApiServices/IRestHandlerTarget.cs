@@ -12,5 +12,7 @@ namespace dg.Utilities.WebApiServices
         void Put(HttpRequest Request, HttpResponse Response, params string[] PathParams);
         void Delete(HttpRequest Request, HttpResponse Response, params string[] PathParams);
         void Head(HttpRequest Request, HttpResponse Response, params string[] PathParams);
+        void Options(HttpRequest Request, HttpResponse Response, params string[] PathParams);
+        void Patch(HttpRequest Request, HttpResponse Response, params string[] PathParams);
     }
 }

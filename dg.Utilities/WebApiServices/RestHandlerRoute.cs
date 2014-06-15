@@ -8,98 +8,56 @@ namespace dg.Utilities.WebApiServices
 {
     public struct RestHandlerRoute
     {
-        public RestHandlerRoute(string[] Route, IRestHandlerTarget Target, bool HandleGet, bool HandlePost, bool HandlePut, bool HandleDelete, bool HandleHead)
+        public RestHandlerRoute(string route, IRestHandlerTarget target)
         {
-            this.Route = Route;
-            this.Target = Target;
-            this.HandleGet = HandleGet;
-            this.HandlePost = HandlePost;
-            this.HandlePut = HandlePut;
-            this.HandleDelete = HandleDelete;
-            this.HandleHead = HandleHead;
-            this.Wildcards = null;
-            this.RouteRegexes = null;
-            this.PushParams = null;
-            this.SlashEnding = false;
-            CompileRoute();
-        }
-        public RestHandlerRoute(string Route, IRestHandlerTarget Target, bool HandleGet, bool HandlePost, bool HandlePut, bool HandleDelete, bool HandleHead)
-        {
-            this.Route = Route.Split(new char[] { '/' }, StringSplitOptions.None);
-            this.Target = Target;
-            this.HandleGet = HandleGet;
-            this.HandlePost = HandlePost;
-            this.HandlePut = HandlePut;
-            this.HandleDelete = HandleDelete;
-            this.HandleHead = HandleHead;
-            this.Wildcards = null;
-            this.RouteRegexes = null;
-            this.PushParams = null;
-            this.SlashEnding = false;
-            CompileRoute();
+            this.Pattern = RouteToRegex(route);
+            this.Target = target;
         }
 
-        public readonly string[] Route;
+        public RestHandlerRoute(Regex pattern, IRestHandlerTarget target)
+        {
+            this.Pattern = pattern;
+            this.Target = target;
+        }
+
+        public static RestHandlerRoute FromOldRouteFormat(string route, IRestHandlerTarget target)
+        {
+            if (route.StartsWith(@"/")) route = route.Remove(0, 1);
+
+            route = Regex.Replace(route, @"#match:([^/]*)", m => "(" + m.Groups[1].Captures[0].Value.Trim('^', '$') + ")"); // match:...
+            route = route.Replace(@"#*", @"([^/]+)"); // /#*
+            route = Regex.Replace(route, @"#([^/]+)", m => "(" + Regex.Escape(m.Groups[1].Captures[0].Value) + ")"); // pass through path parts
+            route += @"/?$";
+
+            return new RestHandlerRoute(new Regex('^' + route, RegexOptions.ECMAScript | RegexOptions.Compiled), target);
+        }
+
+        public Regex Pattern;
         public IRestHandlerTarget Target;
-        public bool HandleGet;
-        public bool HandlePost;
-        public bool HandlePut;
-        public bool HandleDelete;
-        public bool HandleHead;
 
-        internal bool[] Wildcards;
-        internal Regex[] RouteRegexes;
-        internal bool SlashEnding;
-        internal bool[] PushParams;
+        /// <summary>
+        ///  Backbone style routes, most credit to Backbone authors.
+        /// </summary>
+        static Regex optionalParam = new Regex(@"\((.*?)\)", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex namedParam = new Regex(@"(\(\?)?:\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex namedNumericParam = new Regex(@"(\(\?)?#\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex splatParam = new Regex(@"\*\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex escapeRegExp = new Regex(@"[\-{}\[\]+?.,\\\^$|#\s]", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
-        internal void CompileRoute()
+        internal static Regex RouteToRegex(string route)
         {
-            ArrayList wildcards = new ArrayList();
-            ArrayList regexes = new ArrayList();
-            ArrayList pushParams = new ArrayList();
+            if (route.StartsWith(@"/")) route = route.Remove(0, 1);
 
-            string part;
-            for (int j = 0; j < Route.Length; j++)
-            {
-                part = Route[j];
-                if (part.StartsWith(@"#"))
-                {
-                    pushParams.Add(true);
-                    part = part.Length > 1 ? part.Substring(1) : @"";
-                    Route[j] = part;
-                }
-                else
-                {
-                    pushParams.Add(false);
-                }
-
-                if (part.StartsWith(@"match:"))
-                {
-                    wildcards.Add(false);
-                    regexes.Add(new Regex(part.Substring(6), RegexOptions.Compiled | RegexOptions.ECMAScript));
-                }
-                else
-                {
-                    regexes.Add(null);
-                    
-                    if (part == @"*")
-                    {
-                        wildcards.Add(true);
-                    }
-                    else
-                    {
-                        wildcards.Add(false);
-                        for (int s = part.IndexOf('\\'); s > -1; s = part.IndexOf('\\', s + 1))
-                        {
-                            part = part.Remove(s, 1);
-                        }
-                    }
-                }
-            }
-            this.Wildcards = (bool[])wildcards.ToArray(typeof(bool));
-            this.RouteRegexes = (Regex[])regexes.ToArray(typeof(Regex));
-            this.PushParams = (bool[])pushParams.ToArray(typeof(bool));
-            SlashEnding = Route.Length > 0 && Route[Route.Length - 1] == @"/";
+            route = splatParam.Replace(
+                namedParam.Replace(
+                namedNumericParam.Replace(
+                optionalParam.Replace(
+                escapeRegExp.Replace(route, @"\$&"), // Escape regex while leaving our special characters intact
+                @"(?:$1)?"), // optionalParam
+                m => m.Groups[1].Captures.Count == 1 ? m.Value : @"([0-9]+)"), // namedNumericParam
+                m => m.Groups[1].Captures.Count == 1 ? m.Value : @"([^/]+)"), // namedParam
+                @"([^?]*?)"); // splatParam
+            return new Regex('^' + route + @"/?$", RegexOptions.ECMAScript | RegexOptions.Compiled);
         }
     }
 }

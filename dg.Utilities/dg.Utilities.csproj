@@ -226,7 +226,7 @@
     <Compile Include="Threading\Worker.cs" />
     <Compile Include="WebApiServices\RestHandler.cs" />
     <Compile Include="WebApiServices\RestHandlerRoute.cs" />
-    <Compile Include="WebApiServices\RestHandlerTarget.cs" />
+    <Compile Include="WebApiServices\IRestHandlerTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="strongKey.pfx" />
