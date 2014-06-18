@@ -37,7 +37,7 @@ namespace dg.Utilities.WebApiServices
 
         public bool IsReusable { get { return true; } }
 
-        public void ProcessRequest(System.Web.HttpContext context)
+        public virtual void ProcessRequest(System.Web.HttpContext context)
         {
             HttpRequest Request = context.Request;
             HttpResponse Response = context.Response;
