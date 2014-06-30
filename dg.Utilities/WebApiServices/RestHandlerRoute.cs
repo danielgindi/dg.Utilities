@@ -42,7 +42,7 @@ namespace dg.Utilities.WebApiServices
         static Regex namedParam = new Regex(@"(\(\?)?:\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
         static Regex namedNumericParam = new Regex(@"(\(\?)?#\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
         static Regex splatParam = new Regex(@"\*\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
-        static Regex escapeRegExp = new Regex(@"[\-{}\[\]+?.,\\\^$|#\s]", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex escapeRegExp = new Regex(@"[\-{}\[\]+?.,\\\^$|\s]", RegexOptions.ECMAScript | RegexOptions.Compiled);
 
         internal static Regex RouteToRegex(string route)
         {
