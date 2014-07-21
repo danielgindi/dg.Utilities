@@ -442,81 +442,91 @@ namespace dg.Utilities.Imaging
             return Color;
         }
 
-        public static void FillRoundRectangle(Graphics DestinationGraphics, Rectangle DestinationRect, int CornerRadius, Brush FillBrush, Pen BorderPen, Corner Corners)
+        public static void FillRoundRectangle(Graphics destinationGraphics, Rectangle destinationRect,
+            int cornerRadiusTopLeft,
+            int cornerRadiusTopRight,
+            int cornerRadiusBottomRight,
+            int cornerRadiusBottomLeft, 
+            Brush fillBrush, Pen borderPen)
         {
-            System.Drawing.Drawing2D.SmoothingMode mode = DestinationGraphics.SmoothingMode;
-            DestinationGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            System.Drawing.Drawing2D.SmoothingMode mode = destinationGraphics.SmoothingMode;
+            destinationGraphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 
-            if (Corners == Corner.None || CornerRadius <= 0)
+            if (cornerRadiusTopLeft <= 0 && cornerRadiusTopRight <= 0 &&
+                cornerRadiusBottomRight <= 0 && cornerRadiusBottomLeft <= 0)
             {
                 // No corners.. Just fill it
-                if (BorderPen.Width > 0 && (BorderPen.Color != Color.Transparent && BorderPen.Color != Color.Empty))
-                    DestinationGraphics.DrawRectangle(BorderPen, DestinationRect); // Draw the line first, this way we get better quality
-                DestinationGraphics.FillRectangle(FillBrush, DestinationRect);
+                if (borderPen.Width > 0 && (borderPen.Color != Color.Transparent && borderPen.Color != Color.Empty))
+                {
+                    destinationGraphics.DrawRectangle(borderPen, destinationRect); // Draw the line first, this way we get better quality
+                }
+                destinationGraphics.FillRectangle(fillBrush, destinationRect);
             }
             else
             {
                 GraphicsPath path = new GraphicsPath();
 
-                Int32 iCornerRadius = CornerRadius * 2;
-
-                Rectangle arcRect = new Rectangle(DestinationRect.Location, new Size(iCornerRadius, iCornerRadius));
-                bool[] bCorners = new bool[]{
-                            ((Corners & Corner.TopLeft) != 0),
-                            ((Corners & Corner.TopRight) != 0),
-                            ((Corners & Corner.BottomRight) != 0),
-                            ((Corners & Corner.BottomLeft) != 0)
-                        };
-
-                if (bCorners[0]) // top left
+                int maxWRadius = destinationRect.Width / 2;
+                int maxHRadius = destinationRect.Height / 2;
+                                
+                int cornerW, cornerH;
+                if (cornerRadiusTopLeft > 0)
                 {
-                    path.AddArc(arcRect, 180, 90);
+                    cornerW = Math.Min(destinationRect.Width - Math.Min(cornerRadiusTopRight, destinationRect.Width), cornerRadiusTopLeft);
+                    cornerH = Math.Min(destinationRect.Height - Math.Min(cornerRadiusBottomLeft, destinationRect.Height), cornerRadiusTopLeft);
+                    path.AddArc(new Rectangle(destinationRect.Location, new Size(cornerW * 2, cornerH * 2)), 180, 90);
                 }
                 else
                 {
                     path.AddLine(0, 0, 0, 1);
                     path.AddLine(0, 0, 1, 0);
                 }
-                if (bCorners[1]) // top right
+                if (cornerRadiusTopRight > 0)
                 {
-                    arcRect.X = DestinationRect.Right - iCornerRadius;
-                    path.AddArc(arcRect, 270, 90);
+                    cornerW = Math.Min(destinationRect.Width - Math.Min(cornerRadiusTopLeft, destinationRect.Width), cornerRadiusTopRight);
+                    cornerH = Math.Min(destinationRect.Height - Math.Min(cornerRadiusBottomRight, destinationRect.Height), cornerRadiusTopRight);
+                    path.AddArc(new Rectangle(new Point(destinationRect.X + destinationRect.Width - cornerW * 2, destinationRect.Y), 
+                        new Size(cornerW * 2, cornerH * 2)), 270, 90);
                 }
                 else
                 {
-                    path.AddLine(DestinationRect.Right - 1, 0, DestinationRect.Right, 0);
-                    path.AddLine(DestinationRect.Right, 0, DestinationRect.Right, 1);
+                    path.AddLine(destinationRect.Right - 1, 0, destinationRect.Right, 0);
+                    path.AddLine(destinationRect.Right, 0, destinationRect.Right, 1);
                 }
-                if (bCorners[2]) // bottom right
+                if (cornerRadiusBottomRight > 0)
                 {
-                    arcRect.X = DestinationRect.Right - iCornerRadius;
-                    arcRect.Y = DestinationRect.Bottom - iCornerRadius;
-                    path.AddArc(arcRect, 0, 90);
-                }
-                else
-                {
-                    path.AddLine(DestinationRect.Right - 1, DestinationRect.Bottom, DestinationRect.Right, DestinationRect.Bottom);
-                    path.AddLine(DestinationRect.Right, DestinationRect.Bottom - 1, DestinationRect.Right, DestinationRect.Bottom);
-                }
-                if (bCorners[3]) // bottom left
-                {
-                    arcRect.X = DestinationRect.Left;
-                    arcRect.Y = DestinationRect.Bottom - iCornerRadius;
-                    path.AddArc(arcRect, 90, 90);
+                    cornerW = Math.Min(destinationRect.Width - Math.Min(cornerRadiusBottomLeft, destinationRect.Width), cornerRadiusBottomRight);
+                    cornerH = Math.Min(destinationRect.Height - Math.Min(cornerRadiusTopRight, destinationRect.Height), cornerRadiusBottomRight);
+                    path.AddArc(new Rectangle(new Point(destinationRect.X + destinationRect.Width - cornerW * 2, destinationRect.Y + destinationRect.Height - cornerH * 2), 
+                        new Size(cornerW * 2, cornerH * 2)), 0, 90);
                 }
                 else
                 {
-                    path.AddLine(0, DestinationRect.Bottom, 1, DestinationRect.Bottom);
-                    path.AddLine(0, DestinationRect.Bottom - 1, 0, DestinationRect.Bottom);
+                    path.AddLine(destinationRect.Right - 1, destinationRect.Bottom, destinationRect.Right, destinationRect.Bottom);
+                    path.AddLine(destinationRect.Right, destinationRect.Bottom - 1, destinationRect.Right, destinationRect.Bottom);
+                }
+                if (cornerRadiusBottomLeft > 0)
+                {
+                    cornerW = Math.Min(destinationRect.Width - Math.Min(cornerRadiusBottomRight, destinationRect.Width), cornerRadiusBottomLeft);
+                    cornerH = Math.Min(destinationRect.Height - Math.Min(cornerRadiusTopLeft, destinationRect.Height), cornerRadiusBottomLeft);
+                    path.AddArc(new Rectangle(new Point(destinationRect.X, destinationRect.Y + destinationRect.Height - cornerH * 2),
+                        new Size(cornerW * 2, cornerH * 2)), 90, 90);
+                }
+                else
+                {
+                    path.AddLine(0, destinationRect.Bottom, 1, destinationRect.Bottom);
+                    path.AddLine(0, destinationRect.Bottom - 1, 0, destinationRect.Bottom);
                 }
                 path.CloseFigure();
 
-                if (BorderPen.Width > 0 && (BorderPen.Color != Color.Transparent && BorderPen.Color != Color.Empty))
-                    DestinationGraphics.DrawPath(BorderPen, path); // Draw the line first, this way we get better quality
-                DestinationGraphics.FillPath(FillBrush, path);
+                if (borderPen.Width > 0 && (borderPen.Color != Color.Transparent && borderPen.Color != Color.Empty))
+                {
+                    destinationGraphics.DrawPath(borderPen, path); // Draw the line first, this way we get better quality
+                }
+                destinationGraphics.FillPath(fillBrush, path);
             }
 
-            DestinationGraphics.SmoothingMode = mode;
+            destinationGraphics.SmoothingMode = mode;
         }
 
         public static Boolean ProcessImage(
@@ -665,7 +675,11 @@ namespace dg.Utilities.Imaging
                                                         halfBorderWidth,
                                                         finalSize.Width - halfBorderWidth - halfBorderWidth,
                                                         finalSize.Height - halfBorderWidth - halfBorderWidth),
-                                                    CornerRadius, brush, pen, RoundedCorners);
+                                                        (RoundedCorners & Corner.TopLeft) == 0 ? 0 : CornerRadius,
+                                                        (RoundedCorners & Corner.TopRight) == 0 ? 0 : CornerRadius,
+                                                        (RoundedCorners & Corner.BottomRight) == 0 ? 0 : CornerRadius,
+                                                        (RoundedCorners & Corner.BottomLeft) == 0 ? 0 : CornerRadius, 
+                                                        brush, pen);
                                             }
                                         }
                                     }
@@ -752,22 +766,22 @@ namespace dg.Utilities.Imaging
         }
 
         public static bool SetImageRoundBorder(
-            String SourcePath, 
-            String DestinationPath /* null for source */, 
-            ImageFormat DestinationFormat /* null for original format */, 
-            int CornerRadius, 
-            float BorderWidth, 
-            Color BackgroundColor, 
-            Color BorderColor)
+            String sourcePath, 
+            String destinationPath /* null for source */, 
+            ImageFormat destinationFormat /* null for original format */, 
+            int cornerRadius, 
+            float borderWidth, 
+            Color backgroundColor, 
+            Color borderColor)
         {
-            if (DestinationPath == null) DestinationPath = SourcePath;
-            using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(SourcePath))
+            if (destinationPath == null) destinationPath = sourcePath;
+            using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(sourcePath))
             {
                 ApplyExifOrientation(imgOriginal, true);
 
                 string tempFilePath = Files.CreateEmptyTempFile();
 
-                bool retValue = ProcessImageToFile(imgOriginal, DestinationPath, DestinationFormat, 100L, delegate(Image frame)
+                bool retValue = ProcessImageToFile(imgOriginal, destinationPath, destinationFormat, 100L, delegate(Image frame)
                 {
                     System.Drawing.Image imgProcessed = null;
                     try
@@ -779,20 +793,23 @@ namespace dg.Utilities.Imaging
                             gTemp.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
                             gTemp.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
                             gTemp.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                            gTemp.Clear(BackgroundColor);
+                            gTemp.Clear(backgroundColor);
                             using (Brush brush = new System.Drawing.TextureBrush(frame))
                             {
-                                using (Pen pen = new System.Drawing.Pen(BorderColor, BorderWidth))
+                                using (Pen pen = new System.Drawing.Pen(borderColor, borderWidth))
                                 {
-                                    Int32 halfBorderWidth = (Int32)(BorderWidth / 2.0f + 0.5f);
+                                    Int32 halfBorderWidth = (Int32)(borderWidth / 2.0f + 0.5f);
                                     FillRoundRectangle(gTemp,
                                         new Rectangle(
                                             halfBorderWidth,
                                             halfBorderWidth,
                                             frame.Width - halfBorderWidth - halfBorderWidth,
                                             frame.Height - halfBorderWidth - halfBorderWidth),
-                                        CornerRadius, brush, pen,
-                                        Corner.AllCorners);
+                                            cornerRadius,
+                                            cornerRadius,
+                                            cornerRadius,
+                                            cornerRadius, 
+                                            brush, pen);
 
                                     return imgProcessed;
                                 }
@@ -815,9 +832,9 @@ namespace dg.Utilities.Imaging
                 {
                     using (Files.TemporaryFileDeleter temporaryFileDeleter = new Files.TemporaryFileDeleter(tempFilePath))
                     {
-                        if (System.IO.File.Exists(DestinationPath)) System.IO.File.Delete(DestinationPath);
-                        System.IO.File.Move(tempFilePath, DestinationPath);
-                        Files.ResetFilePermissionsToInherited(DestinationPath);
+                        if (System.IO.File.Exists(destinationPath)) System.IO.File.Delete(destinationPath);
+                        System.IO.File.Move(tempFilePath, destinationPath);
+                        Files.ResetFilePermissionsToInherited(destinationPath);
                         temporaryFileDeleter.DoNotDelete();
                     }
                 }
@@ -825,7 +842,7 @@ namespace dg.Utilities.Imaging
                 return retValue;
             }
         }
-
+        
         public delegate Image ProcessImageFrameDelegate(Image frame);
 
         /// <summary>
