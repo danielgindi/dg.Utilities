@@ -22,12 +22,12 @@ namespace dg.Utilities.Imaging
         static byte[] BMP_HEADER = new byte[] { 0x42, 0x4D };
         static byte[] ICNS_HEADER = new byte[] { (byte)'i', (byte)'c', (byte)'n', (byte)'s' };
         
-        const UInt16 EXIF_BYTE       = 1;		// BYTE	    8-bit unsigned integer
-        const UInt16 EXIF_SHORT      = 3;		// SHORT    16-bit unsigned integer
-        const UInt16 EXIF_LONG       = 4;		// LONG     32-bit unsigned integer
-        const UInt16 EXIF_SBYTE      = 6;		// SBYTE    8-bit signed integer
-        const UInt16 EXIF_SSHORT     = 8;		// SSHORT   16-bit signed integer
-        const UInt16 EXIF_SLONG      = 9;		// SLONG    32-bit signed integer
+        const UInt16 EXIF_TAGTYPE_BYTE       = 1;		// BYTE	    8-bit unsigned integer
+        const UInt16 EXIF_TAGTYPE_SHORT      = 3;		// SHORT    16-bit unsigned integer
+        const UInt16 EXIF_TAGTYPE_LONG       = 4;		// LONG     32-bit unsigned integer
+        const UInt16 EXIF_TAGTYPE_SBYTE      = 6;		// SBYTE    8-bit signed integer
+        const UInt16 EXIF_TAGTYPE_SSHORT     = 8;		// SSHORT   16-bit signed integer
+        const UInt16 EXIF_TAGTYPE_SLONG      = 9;		// SLONG    32-bit signed integer
 
         private static Size GetImageSize_EXIF(FileStream stream)
         {
@@ -83,20 +83,20 @@ namespace dg.Utilities.Imaging
                             switch (tagType)
                             {
                                 default:
-                                case EXIF_BYTE:
-                                case EXIF_SBYTE:
+                                case EXIF_TAGTYPE_BYTE:
+                                case EXIF_TAGTYPE_SBYTE:
                                     tagValue = reader.ReadByte();
                                     stream.Seek(3, SeekOrigin.Current);
                                     break;
-                                case EXIF_SHORT:
-                                case EXIF_SSHORT:
+                                case EXIF_TAGTYPE_SHORT:
+                                case EXIF_TAGTYPE_SSHORT:
                                     tagValue = reader.ReadUInt16();
                                     stream.Seek(2, SeekOrigin.Current);
                                     break;
-                                case EXIF_LONG:
+                                case EXIF_TAGTYPE_LONG:
                                     tagValue = reader.ReadUInt32();
                                     break;
-                                case EXIF_SLONG:
+                                case EXIF_TAGTYPE_SLONG:
                                     tagValue = (UInt32)reader.ReadInt32();
                                     break;
                             }
