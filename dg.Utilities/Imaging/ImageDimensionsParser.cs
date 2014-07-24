@@ -8,6 +8,9 @@ using dg.Utilities.General_Utilities;
 //  Created by Daniel Cohen Gindi on 3/29/13.
 //  Copyright (c) 2013 danielgindi@gmail.com. All rights reserved.
 //
+//  Extended to handle ICNS files by David W. Stockton 4/23/14.
+//  Copyright (c) 2014 Syntonicity, LLC. All rights reserved.
+//  
 namespace dg.Utilities.Imaging
 {
     public static class ImageDimensionsParser
@@ -17,6 +20,7 @@ namespace dg.Utilities.Imaging
         static byte[] PNG_HEADER = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
         static byte[] GIF_HEADER = new byte[] { (byte)'G', (byte)'I', (byte)'F' };
         static byte[] BMP_HEADER = new byte[] { 0x42, 0x4D };
+        static byte[] ICNS_HEADER = new byte[] { (byte)'i', (byte)'c', (byte)'n', (byte)'s' };
         
         const UInt16 EXIF_BYTE       = 1;		// BYTE	    8-bit unsigned integer
         const UInt16 EXIF_SHORT      = 3;		// SHORT    16-bit unsigned integer
@@ -214,6 +218,127 @@ namespace dg.Utilities.Imaging
             return Size.Empty;
         }
 
+        /*!
+         @author David W. Stockton
+         @brief 
+             Code below based on the description at:
+             http://en.wikipedia.org/wiki/Apple_Icon_Image_format
+         */
+
+        #region ICNS Definitions
+
+        private struct AppleIconInfo
+        {
+            public AppleIconInfo(string osType, Int32 width, Int32 height)
+            {
+                this.osType = ASCIIEncoding.ASCII.GetBytes(osType.ToCharArray(), 0, 4);
+                this.width = width;
+                this.height = height;
+            }
+
+            public byte[] osType;
+            public Int32 width;
+            public Int32 height;
+        }
+
+        private static AppleIconInfo[] appleIconInfoTable = new AppleIconInfo[]{
+           //	OSType	Width, Height		// Length	Size	Supported OS Version	Description
+           //					  (bytes)	(pixels)
+           new AppleIconInfo("ICON", 32, 32),		// 128		32	1.0	32ֳ—32 1-bit mono icon
+           new AppleIconInfo("ICN#", 32, 32),		// 256		32	6.0	32ֳ—32 1-bit mono icon with 1-bit mask
+           new AppleIconInfo("icm#", 16, 12),		// 48		16	6.0	16ֳ—12 1 bit mono icon with 1-bit mask
+           new AppleIconInfo("icm4", 16, 12),		// 96		16	7.0	16ֳ—12 4 bit icon
+           new AppleIconInfo("icm8", 16, 12),		// 192		16	7.0	16ֳ—12 8 bit icon
+           new AppleIconInfo("ics#", 16, 16),		// 64 (32 img + 32 mask) 16	6.0	16ֳ—16 1-bit mask
+           new AppleIconInfo("ics4", 16, 16),		// 128		16	7.0	16ֳ—16 4-bit icon
+           new AppleIconInfo("ics8", 16, 16),		// 256		16	7.0	16x16 8 bit icon
+           new AppleIconInfo("is32", 16, 16),		// varies (768)	16	8.5	16ֳ—16 24-bit icon
+           new AppleIconInfo("s8mk", 16, 16),		// 256		16	8.5	16x16 8-bit mask
+           new AppleIconInfo("icl4", 32, 32),		// 512		32	7.0	32ֳ—32 4-bit icon
+           new AppleIconInfo("icl8", 32, 32),		// 1,024	32	7.0	32ֳ—32 8-bit icon
+           new AppleIconInfo("il32", 32, 32),		// varies (3,072) 32	8.5	32x32 24-bit icon
+           new AppleIconInfo("l8mk", 32, 32),		// 1,024	32	8.5	32ֳ—32 8-bit mask
+           new AppleIconInfo("ich#", 48, 48),		// 288		48	8.5	48ֳ—48 1-bit mask
+           new AppleIconInfo("ich4", 48, 48),		// 1,152	48	8.5	48ֳ—48 4-bit icon
+           new AppleIconInfo("ich8", 48, 48),		// 2,304	48	8.5	48ֳ—48 8-bit icon
+           new AppleIconInfo("ih32", 48, 48),		// varies (6,912) 48	8.5	48ֳ—48 24-bit icon
+           new AppleIconInfo("h8mk", 48, 48),		// 2,304	48	8.5	48ֳ—48 8-bit mask
+           new AppleIconInfo("it32", 128, 128),	// varies (49,152) 128	10.0	128ֳ—128 24-bit icon
+           new AppleIconInfo("t8mk", 128, 128),	// 16,384	128	10.0	128ֳ—128 8-bit mask
+           new AppleIconInfo("icp4", 16, 16),		// varies	16	10.7	16x16 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("icp5", 32, 32),		// varies	32	10.7	32x32 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("icp6", 64, 64),		// varies	64	10.7	64x64 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic07", 128, 128),	// varies	128	10.7	128x128 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic08", 256, 256),	// varies	256	10.5	256ֳ—256 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic09", 512, 512),	// varies	512	10.5	512ֳ—512 icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic10", 1024, 1024),	// varies	1024	10.7	1024ֳ—1024 in 10.7 (or 512x512@2x "retina" in 10.8) icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic11", 32, 32),		// varies	32	10.8	16x16@2x "retina" icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic12", 64, 64),		// varies	64	10.8	32x32@2x "retina" icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic13", 256, 256),	// varies	256	10.8	128x128@2x "retina" icon in JPEG 2000 or PNG format
+           new AppleIconInfo("ic14", 512, 512),	// varies	512	10.8	256x256@2x "retina" icon in JPEG 2000 or PNG format
+           new AppleIconInfo("----", 0, 0),		// end marker for search failure
+        };
+
+        #endregion
+        
+        private static Size GetImageSize_ICNS(FileStream stream)
+        {
+            Size size = Size.Empty;
+            byte[] buffer = new byte[4];
+            byte[] iconType = new byte[4];
+
+            // Attempt to read ICNS header
+            // Read ICNS magic number (always "icns")
+            if (stream.Read(buffer, 0, 4) != 4
+                || !CompareBytesUnsafe(buffer, ICNS_HEADER, 4)) return Size.Empty;
+
+            int width = 0, height = 0;
+
+            using (EndianSensitiveReader reader = new EndianSensitiveReader(stream))
+            {
+                reader.LittleEndian = false;
+
+                // Read the length of the file in bytes
+                UInt32 fileSize = reader.ReadUInt32();
+
+                UInt32 dataLength, filepos = 8;
+                int i;
+
+                do
+                {
+                    // Read the icon type
+                    if (stream.Read(iconType, 0, 4) != 4) return Size.Empty;
+
+                    // Read the Length of data, in bytes (including type and length), msb first
+                    dataLength = reader.ReadUInt32();
+
+                    for (i = 0; appleIconInfoTable[i].width > 0; ++i)
+                    {
+                        if (CompareBytesUnsafe(iconType, appleIconInfoTable[i].osType))
+                        {
+                            if (appleIconInfoTable[i].width > width)
+                            {
+                                width = appleIconInfoTable[i].width;
+                            }
+                            if (appleIconInfoTable[i].height > height)
+                            {
+                                height = appleIconInfoTable[i].height;
+                            }
+                            break;
+                        }
+                    }
+
+                    filepos += dataLength;
+                } while (filepos < fileSize && stream.Seek(dataLength - 8, SeekOrigin.Current) == 0);
+            }
+
+            if (width > 0 && height > 0)
+            {
+                size = new Size(width, height);
+            }
+            return size;
+        }
+
         public static Size GetImageSize(string path)
         {
             bool success = false;
@@ -309,6 +434,22 @@ namespace dg.Utilities.Imaging
                                 size.Height = (buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0];
                                 success = true;
                             }
+                        }
+                    }
+                }
+                catch { }
+
+                try
+                {
+                    if (!success)
+                    {
+                        fileStream.Seek(0, SeekOrigin.Begin);
+
+                        // Try the ICNS format
+                        size = GetImageSize_ICNS(fileStream);
+                        if (!size.IsEmpty)
+                        {
+                            success = true;
                         }
                     }
                 }
