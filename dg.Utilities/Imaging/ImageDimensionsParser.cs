@@ -5,6 +5,9 @@ using System.Drawing;
 using System.IO;
 using dg.Utilities.General_Utilities;
 
+//  Created by Daniel Cohen Gindi on 3/29/13.
+//  Copyright (c) 2013 danielgindi@gmail.com. All rights reserved.
+//
 namespace dg.Utilities.Imaging
 {
     public static class ImageDimensionsParser
@@ -14,6 +17,144 @@ namespace dg.Utilities.Imaging
         static byte[] PNG_HEADER = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
         static byte[] GIF_HEADER = new byte[] { (byte)'G', (byte)'I', (byte)'F' };
         static byte[] BMP_HEADER = new byte[] { 0x42, 0x4D };
+        
+        const UInt16 EXIF_BYTE       = 1;		// BYTE	    8-bit unsigned integer
+        const UInt16 EXIF_SHORT      = 3;		// SHORT    16-bit unsigned integer
+        const UInt16 EXIF_LONG       = 4;		// LONG     32-bit unsigned integer
+        const UInt16 EXIF_SBYTE      = 6;		// SBYTE    8-bit signed integer
+        const UInt16 EXIF_SSHORT     = 8;		// SSHORT   16-bit signed integer
+        const UInt16 EXIF_SLONG      = 9;		// SLONG    32-bit signed integer
+
+        private static Size GetImageSize_EXIF(FileStream stream)
+        {
+            byte[] buffer = new byte[4];
+
+            long offset = stream.Position;
+
+            // Read Byte alignment
+            if (stream.Read(buffer, 0, 2) != 2) return Size.Empty;
+
+            bool littleEndian = false;
+            if (buffer[0] == 0x49 && buffer[1] == 0x49)
+            {
+                littleEndian = true;
+            }
+            else if (buffer[0] != 0x4D && buffer[1] != 0x4D) return Size.Empty;
+
+            using (EndianSensitiveReader reader = new EndianSensitiveReader(stream))
+            {
+                reader.LittleEndian = littleEndian;
+
+                // TIFF tag marker
+                if (reader.ReadUInt16() != 0x002A) return Size.Empty;
+
+                // Directory offset bytes
+                UInt32 dirOffset = reader.ReadUInt32();
+
+                ExifPropertyTag tag;
+                UInt16 numberOfTags, tagType;
+                UInt32 tagLength, tagValue;
+                int orientation = 1, width = 0, height = 0;
+                UInt32 exifIFDOffset = 0;
+
+                while (dirOffset != 0)
+                {
+                    stream.Seek(offset + dirOffset, SeekOrigin.Begin);
+
+                    numberOfTags = reader.ReadUInt16();
+
+                    for (UInt16 i = 0; i < numberOfTags; i++)
+                    {
+                        tag = (ExifPropertyTag)reader.ReadUInt16();
+                        tagType = reader.ReadUInt16();
+                        tagLength = reader.ReadUInt32();
+
+                        if (tag == ExifPropertyTag.PropertyTagOrientation ||
+                            tag == ExifPropertyTag.PropertyTagExifPixXDim ||
+                            tag == ExifPropertyTag.PropertyTagExifPixYDim ||
+                            tag == ExifPropertyTag.PropertyTagImageWidth ||
+                            tag == ExifPropertyTag.PropertyTagImageHeight ||
+                            tag == ExifPropertyTag.PropertyTagExifIFD)
+                        {
+                            switch (tagType)
+                            {
+                                default:
+                                case EXIF_BYTE:
+                                case EXIF_SBYTE:
+                                    tagValue = reader.ReadByte();
+                                    stream.Seek(3, SeekOrigin.Current);
+                                    break;
+                                case EXIF_SHORT:
+                                case EXIF_SSHORT:
+                                    tagValue = reader.ReadUInt16();
+                                    stream.Seek(2, SeekOrigin.Current);
+                                    break;
+                                case EXIF_LONG:
+                                    tagValue = reader.ReadUInt32();
+                                    break;
+                                case EXIF_SLONG:
+                                    tagValue = (UInt32)reader.ReadInt32();
+                                    break;
+                            }
+
+                            switch (tag)
+                            {
+                                case ExifPropertyTag.PropertyTagOrientation:
+                                    // Orientation tag
+                                    orientation = (int)tagValue;
+                                    break;
+                                case ExifPropertyTag.PropertyTagExifPixXDim:
+                                case ExifPropertyTag.PropertyTagImageWidth:
+                                    // Width tag
+                                    width = (int)tagValue;
+                                    break;
+                                case ExifPropertyTag.PropertyTagExifPixYDim:
+                                case ExifPropertyTag.PropertyTagImageHeight:
+                                    // Height tag
+                                    height = (int)tagValue;
+                                    break;
+                                case ExifPropertyTag.PropertyTagExifIFD:
+                                    // EXIF IFD offset tag
+                                    exifIFDOffset = tagValue;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            stream.Seek(4, SeekOrigin.Current);
+                        }
+                    }
+
+                    if (dirOffset == exifIFDOffset)
+                    {
+                        break;
+                    }
+
+                    dirOffset = reader.ReadUInt32();
+
+                    if (dirOffset == 0)
+                    {
+                        dirOffset = exifIFDOffset;
+                    }
+                }
+
+                if (width > 0 && height > 0)
+                {
+                    if (orientation >= 5 && orientation <= 8)
+                    {
+                        return new Size(height, width);
+                    }
+                    else
+                    {
+                        return new Size(width, height);
+                    }
+                }
+            }
+
+            return Size.Empty;
+        }
 
         private static Size GetImageSize_JPEG(FileStream stream)
         {
@@ -22,13 +163,12 @@ namespace dg.Utilities.Imaging
             while (stream.Read(buffer, 0, 2) == 2 && buffer[0] == 0xFF &&
                 ((buffer[1] >= 0xE0 && buffer[1] <= 0xEF) ||
                 buffer[1] == 0xDB ||
+                buffer[1] == 0xC4 || buffer[1] == 0xC2 ||
                 buffer[1] == 0xC0))
             {
                 if (buffer[1] == 0xE1)
                 { // Parse APP1 EXIF
-
-                    long offset = stream.Position;
-
+                    
                     // Marker segment length
                     if (stream.Read(buffer, 0, 2) != 2) return Size.Empty;
                     // int blockLength = ((buffer[0] << 8) | buffer[1]) - 2;
@@ -41,121 +181,14 @@ namespace dg.Utilities.Imaging
                     if (stream.Read(buffer, 0, 2) != 2 ||
                         buffer[0] != 0x00 || buffer[1] != 0x00) return Size.Empty;
 
-                    // Read Byte alignment
-                    if (stream.Read(buffer, 0, 2) != 2) return Size.Empty;
-
-                    bool littleEndian = false;
-                    if (buffer[0] == 0x49 && buffer[1] == 0x49)
+                    Size size = GetImageSize_EXIF(stream);
+                    if (!size.IsEmpty)
                     {
-                        littleEndian = true;
+                        return size;
                     }
-                    else if (buffer[0] != 0x4D && buffer[1] != 0x4D) return Size.Empty;
-
-                    using (EndianSensitiveReader reader = new EndianSensitiveReader(stream))
-                    {
-                        reader.LittleEndian = littleEndian;
-
-                        // TIFF tag marker
-                        if (reader.ReadUInt16() != 0x002A) return Size.Empty;
-
-                        // Directory offset bytes
-                        UInt32 dirOffset = reader.ReadUInt32();
-
-                        ExifPropertyTag tag;
-                        UInt16 numberOfTags, tagType;
-                        UInt32 tagLength, tagValue;
-                        int orientation = 1, width = 0, height = 0;
-                        UInt32 exifIFDOffset = 0;
-
-                        while (dirOffset != 0)
-                        {
-                            stream.Seek(offset + 8 + dirOffset, SeekOrigin.Begin);
-
-                            numberOfTags = reader.ReadUInt16();
-
-                            for (UInt16 i = 0; i < numberOfTags; i++)
-                            {
-                                tag = (ExifPropertyTag)reader.ReadUInt16();
-                                tagType = reader.ReadUInt16();
-                                tagLength = reader.ReadUInt32();
-
-                                if (tag == ExifPropertyTag.PropertyTagOrientation ||
-                                    tag == ExifPropertyTag.PropertyTagExifPixXDim ||
-                                    tag == ExifPropertyTag.PropertyTagExifPixYDim ||
-                                    tag == ExifPropertyTag.PropertyTagExifIFD)
-                                {
-                                    switch (tagType)
-                                    {
-                                        default:
-                                        case 1:
-                                            tagValue = reader.ReadByte();
-                                            stream.Seek(3, SeekOrigin.Current);
-                                            break;
-                                        case 3:
-                                            tagValue = reader.ReadUInt16();
-                                            stream.Seek(2, SeekOrigin.Current);
-                                            break;
-                                        case 4:
-                                            tagValue = reader.ReadUInt32();
-                                            break;
-                                        case 9:
-                                            tagValue = (UInt32)reader.ReadInt32();
-                                            break;
-                                    }
-
-                                    if (tag == ExifPropertyTag.PropertyTagOrientation)
-                                    { // Orientation tag
-                                        orientation = (int)tagValue;
-                                    }
-                                    else if (tag == ExifPropertyTag.PropertyTagExifPixXDim)
-                                    { // Width tag
-                                        width = (int)tagValue;
-                                    }
-                                    else if (tag == ExifPropertyTag.PropertyTagExifPixYDim)
-                                    { // Height tag
-                                        height = (int)tagValue;
-                                    }
-                                    else if (tag == ExifPropertyTag.PropertyTagExifIFD)
-                                    { // EXIF IFD offset tag
-                                        exifIFDOffset = tagValue;
-                                    }
-                                }
-                                else
-                                {
-                                    stream.Seek(4, SeekOrigin.Current);
-                                }
-                            }
-
-                            if (dirOffset == exifIFDOffset)
-                            {
-                                break;
-                            }
-
-                            dirOffset = reader.ReadUInt32();
-
-                            if (dirOffset == 0)
-                            {
-                                dirOffset = exifIFDOffset;
-                            }
-                        }
-
-                        if (width > 0 && height > 0)
-                        {
-                            if (orientation >= 5 && orientation <= 8)
-                            {
-                                return new Size(height, width);
-                            }
-                            else
-                            {
-                                return new Size(width, height);
-                            }
-                        }
-                    }
-
-                    return Size.Empty;
                 }
-                else if (buffer[1] == 0xE1)
-                { // Parse SOF0 (Start of Frame baseline)
+                else if (buffer[1] == 0xC0 || buffer[1] == 0xC2)
+                { // Parse SOF0 (Start of Frame, Baseline DCT or Progressive DCT)
             
                     // Skip LF, P
                     stream.Seek(3, SeekOrigin.Current);
@@ -280,6 +313,22 @@ namespace dg.Utilities.Imaging
                     }
                 }
                 catch { }
+
+                try
+                {
+                    if (!success)
+                    {
+                        fileStream.Seek(0, SeekOrigin.Begin);
+
+                        // TIFF starts with just plain EXIF
+                        size = GetImageSize_EXIF(fileStream);
+                        if (!size.IsEmpty)
+                        {
+                            success = true;
+                        }
+                    }
+                }
+                catch { }
             }
 
             if (!success)
@@ -292,6 +341,8 @@ namespace dg.Utilities.Imaging
 
             return size;
         }
+
+        #region Bytes compare functions
 
         private static bool CompareBytesUnsafe(byte[] leftBytes, byte[] rightBytes)
         {
@@ -339,5 +390,7 @@ namespace dg.Utilities.Imaging
                 return true;
             }
         }
+
+        #endregion
     }
 }
