@@ -12,7 +12,7 @@ namespace dg.Utilities.WebApiServices
     /// Supports Backbone-style with some additional sugar.
     /// 
     /// :name_param
-    /// :named_digits_param
+    /// #named_digits_param
     /// *wildcard_including_backslashes
     /// (optional_param)
     /// 
