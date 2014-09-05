@@ -130,9 +130,11 @@ namespace dg.Utilities
         /// </summary>
         public static string ResolveUrl(string relativeUrl)
         {
-            if (relativeUrl == null) throw new ArgumentNullException("relativeUrl");
+            if (relativeUrl == null) 
+				throw new ArgumentNullException("relativeUrl");
 
-            if (relativeUrl.Length == 0 || relativeUrl[0] == '/' || relativeUrl[0] == '\\') return relativeUrl;
+            if (relativeUrl.Length == 0 || relativeUrl[0] == '/' || relativeUrl[0] == '\\') 
+				return relativeUrl;
 
             int idxOfScheme = relativeUrl.IndexOf(@"://", StringComparison.Ordinal);
             if (idxOfScheme != -1)
@@ -143,10 +145,14 @@ namespace dg.Utilities
 
             StringBuilder sbUrl = new StringBuilder();
             sbUrl.Append(HttpRuntime.AppDomainAppVirtualPath);
-            if (sbUrl.Length == 0 || sbUrl[sbUrl.Length - 1] != '/') sbUrl.Append('/');
+            if (sbUrl.Length == 0 || sbUrl[sbUrl.Length - 1] != '/') 
+			{
+				sbUrl.Append('/');
+			}
 
             bool foundQM = false; // found question mark already? query string, do not touch!
             bool foundSlash; // the latest char was a slash?
+			
             if (relativeUrl.Length > 1
                 && relativeUrl[0] == '~'
                 && (relativeUrl[1] == '/' || relativeUrl[1] == '\\'))
@@ -154,14 +160,23 @@ namespace dg.Utilities
                 relativeUrl = relativeUrl.Substring(2);
                 foundSlash = true;
             }
-            else foundSlash = false;
+            else 
+			{
+				foundSlash = false;
+			}
+			
             foreach (char c in relativeUrl)
             {
                 if (!foundQM)
                 {
-                    if (c == '?') foundQM = true;
+                    if (c == '?') 
+					{
+						// Stop "processing", and pass the query string as-is.
+						foundQM = true;
+					}
                     else
                     {
+						// Strip extra slashes
                         if (c == '/' || c == '\\')
                         {
                             if (foundSlash) continue;
@@ -172,7 +187,10 @@ namespace dg.Utilities
                                 continue;
                             }
                         }
-                        else if (foundSlash) foundSlash = false;
+                        else if (foundSlash) 
+						{
+							foundSlash = false;
+						}
                     }
                 }
                 sbUrl.Append(c);
