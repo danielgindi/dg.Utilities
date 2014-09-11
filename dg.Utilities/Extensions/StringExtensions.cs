@@ -239,5 +239,60 @@ namespace dg.Utilities
         {
             return Strings.LevenshteinDistance(fromString, input);
         }
+
+        public static string ReplaceSharps(this string input, Dictionary<string, string> sharpFieldMap)
+        {
+            if (input == null || input.Length == 0) return input;
+
+            // sharp replacing
+            StringBuilder sb = new StringBuilder();
+            int firstSharp = -1;
+            bool sharpOk = false;
+            char c;
+            for (int j = 0; j < input.Length; j++)
+            {
+                c = input[j];
+                if (c == '#')
+                {
+                    if (firstSharp == -1)
+                    {
+                        firstSharp = j;
+                    }
+                    else if (firstSharp == j - 1)
+                    { // Convert ## to #, to allow escaping those #
+                        firstSharp = -1;
+                        sb.Append(c);
+                    }
+                    else
+                    {
+                        sharpOk = false;
+                        if (j - firstSharp > 1)
+                        {
+                            string val;
+                            sharpFieldMap.TryGetValue(input.Substring(firstSharp + 1, j - firstSharp - 1), out val);
+                            sb.Append(val);
+                            sharpOk = true;
+                        }
+                        if (!sharpOk)
+                        {
+                            sb.Append(input.Substring(firstSharp, j - firstSharp + 1));
+                        }
+                        firstSharp = -1;
+                    }
+                }
+                else if (firstSharp == -1)
+                {
+                    sb.Append(c);
+                }
+            }
+            if (firstSharp > -1)
+            {
+                sb.Append(input.Substring(firstSharp));
+            }
+            input = sb.ToString();
+            sb = null;
+            // end of sharp replacing
+            return input;
+        }
     }
 }
