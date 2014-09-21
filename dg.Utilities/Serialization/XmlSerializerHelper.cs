@@ -37,13 +37,14 @@ namespace dg.Utilities.Serialization
                         xml = streamReader.ReadToEnd();
                     }
                 }
-                streamReader.Close();
-                streamReader.Dispose();
             }
-            catch
+            finally
             {
-                streamReader.Close();
-                streamReader.Dispose();
+                if (streamReader != null)
+                {
+                    streamReader.Close();
+                    streamReader.Dispose();
+                }
             }
             return xml;
         }
