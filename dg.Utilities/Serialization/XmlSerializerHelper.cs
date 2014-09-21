@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Xml;
 
-namespace dg.Utilities
+namespace dg.Utilities.Serialization
 {
     public static class XmlSerializerHelper
     {
