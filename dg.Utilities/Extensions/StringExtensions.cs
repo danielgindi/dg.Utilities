@@ -240,11 +240,20 @@ namespace dg.Utilities
             return Strings.LevenshteinDistance(fromString, input);
         }
 
-        public static string ReplaceSharps(this string input, Dictionary<string, string> sharpFieldMap)
+        /// <summary>
+        /// Replaces codes in the strings with the values from the dictionary.
+        /// Code may appear in the #CODE# form.
+        /// Use double sharp (##) to escape where a literal is required.
+        /// Keys that do not appear in the dictionary - will not be replaced
+        /// </summary>
+        /// <param name="text">The input text</param>
+        /// <param name="keyValueMap">Dictionary of the code->value mappings</param>
+        /// <param name="preserveNotFoundValues">Dictionary of the code->value mappings</param>
+        /// <returns>Processed data after replacing the sharps with the corresponding values</returns>
+        public static string ReplaceSharps(this string input, Dictionary<string, string> keyValueMap, bool preserveNotFoundValues = true)
         {
             if (input == null || input.Length == 0) return input;
 
-            // sharp replacing
             StringBuilder sb = new StringBuilder();
             int firstSharp = -1;
             bool sharpOk = false;
@@ -269,15 +278,21 @@ namespace dg.Utilities
                         if (j - firstSharp > 1)
                         {
                             string val;
-                            sharpFieldMap.TryGetValue(input.Substring(firstSharp + 1, j - firstSharp - 1), out val);
-                            sb.Append(val);
-                            sharpOk = true;
+                            sharpOk = keyValueMap.TryGetValue(input.Substring(firstSharp + 1, j - firstSharp - 1), out val);
+                            if (sharpOk)
+                            {
+                                sb.Append(val);
+                            }
                         }
-                        if (!sharpOk)
+                        if (sharpOk || !preserveNotFoundValues)
                         {
-                            sb.Append(input.Substring(firstSharp, j - firstSharp + 1));
+                            firstSharp = -1;
                         }
-                        firstSharp = -1;
+                        else
+                        {
+                            sb.Append(input.Substring(firstSharp, j - firstSharp));
+                            firstSharp = j;
+                        }
                     }
                 }
                 else if (firstSharp == -1)
@@ -289,10 +304,7 @@ namespace dg.Utilities
             {
                 sb.Append(input.Substring(firstSharp));
             }
-            input = sb.ToString();
-            sb = null;
-            // end of sharp replacing
-            return input;
+            return sb.ToString();
         }
     }
 }
