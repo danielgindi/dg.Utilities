@@ -82,7 +82,7 @@ namespace dg.Utilities.Apns
         }
         public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, APNSErrorDelegate Rejected)
         {
-            SendMessage(DeviceToken, Alert, Badge, Sound, Rejected);
+            SendMessage(DeviceToken, Alert, Badge, Sound, null, Rejected);
         }
         public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, Dictionary<string, object[]> CustomItems, APNSErrorDelegate Rejected)
         {
