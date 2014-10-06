@@ -39,6 +39,7 @@ namespace dg.Utilities.WebApiServices
         ///  Backbone style routes, most credit to Backbone authors.
         /// </summary>
         static Regex optionalParam = new Regex(@"\((.*?)\)", RegexOptions.ECMAScript | RegexOptions.Compiled);
+        static Regex namedFinalParam = new Regex(@"(\(\?)?::(\w+)", RegexOptions.ECMAScript | RegexOptions.Compiled);
         static Regex namedParam = new Regex(@"(\(\?)?:\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
         static Regex namedNumericParam = new Regex(@"(\(\?)?#\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
         static Regex splatParam = new Regex(@"\*\w+", RegexOptions.ECMAScript | RegexOptions.Compiled);
@@ -50,11 +51,13 @@ namespace dg.Utilities.WebApiServices
 
             route = splatParam.Replace(
                 namedParam.Replace(
+                namedFinalParam.Replace(
                 namedNumericParam.Replace(
                 optionalParam.Replace(
                 escapeRegExp.Replace(route, @"\$&"), // Escape regex while leaving our special characters intact
                 @"(?:$1)?"), // optionalParam
                 m => m.Groups[1].Captures.Count == 1 ? m.Value : @"([0-9]+)"), // namedNumericParam
+                m => m.Groups[1].Captures.Count == 1 ? m.Value : (@"(" + m.Groups[2].Captures[0].Value + ")")), // namedFinalParam
                 m => m.Groups[1].Captures.Count == 1 ? m.Value : @"([^/]+)"), // namedParam
                 @"([^?]*?)"); // splatParam
             return new Regex('^' + route + @"/?$", RegexOptions.ECMAScript | RegexOptions.Compiled);
