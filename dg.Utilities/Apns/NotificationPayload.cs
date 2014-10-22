@@ -19,6 +19,8 @@ namespace dg.Utilities.Apns
 
         public object ContextData { get; set; }
 
+        public bool ContentAvailable { get; set; }
+
         internal int PayloadId { get; set; }
 
         public Dictionary<string, object[]> CustomItems
@@ -155,6 +157,13 @@ namespace dg.Utilities.Apns
                 if (!apsFirst) json.Append(','); else apsFirst = false;
                 json.Append(@"""sound"":");
                 AppendJValue(json, this.Sound);
+            }
+
+            if (this.ContentAvailable)
+            {
+                if (!apsFirst) json.Append(','); else apsFirst = false;
+                json.Append(@"""content-available"":");
+                AppendJValue(json, 1);
             }
 
             json.Append('}'); // aps
