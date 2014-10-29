@@ -1054,6 +1054,55 @@ namespace dg.Utilities.Spreadsheet
             }
         }
 
+        public void SetCellFormula(string Formula, string DataPlaceholder, int StyleIndex = -1, bool FormatFromStyle = true, int MergeAcross = 0, int MergeDown = 0)
+        {
+            if (IsXml)
+            {
+                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                    (
+                        (MergeAcross != 0 && MergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        (
+                            (MergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                        )
+                    );
+                if (StyleIndex != -1)
+                {
+                    if (FormatFromStyle)
+                    {
+                        ExcelSheetStyle style = Styles[StyleIndex];
+                        if (style.NumberFormat != null && (
+                            style.NumberFormat == NumberFormat.Scientific ||
+                            style.NumberFormat == NumberFormat.Fixed ||
+                            style.NumberFormat == NumberFormat.Standard ||
+                            style.NumberFormat == NumberFormat.Number0 ||
+                            style.NumberFormat == NumberFormat.Number0_00))
+                        {
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\" {1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                        }
+                        else
+                        {
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                        }
+                    }
+                    else
+                    {
+                        Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                    }
+                }
+                else
+                {
+                    Write(string.Format("    <Cell ss:Formula=\"{2}\"{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                }
+            }
+            else
+            {
+                Write(string.Format(@"""{0}"",", PrepareString(Formula)));
+            }
+        }
+
         #endregion
     }
 }
