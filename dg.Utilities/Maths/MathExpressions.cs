@@ -143,6 +143,10 @@ namespace dg.Utilities.Maths
                         token = new MathTokenNumber(value);
                     }
 			    }
+			    else if (c == '(')
+			    {
+				    token = new MathToken(MathToken.TokenType.LParen);
+			    }
 			    else if (c == ')')
 			    {
 				    token = new MathToken(MathToken.TokenType.RParen);
