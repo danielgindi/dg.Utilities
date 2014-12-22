@@ -192,34 +192,6 @@ namespace dg.Utilities.Maths
                 return null;
             }
 
-            if (token.Type == MathToken.TokenType.Operation && null == _PreviousToken)
-            {
-                MathTokenOperation pOperation = token as MathTokenOperation;
-                MathTokenOperation.OperationType op = pOperation != null ? pOperation.Operation : MathTokenOperation.OperationType.Add;
-                if (op == MathTokenOperation.OperationType.Add || op == MathTokenOperation.OperationType.Subtract)
-                {
-                    int iPos = _CurrentReadPosition;
-                    MathToken pNext = GetNextToken();
-                    if (null != pNext)
-                    {
-                        MathTokenNumber pNumber = pNext as MathTokenNumber;
-                        if (null != pNumber)
-                        {
-                            if (op == MathTokenOperation.OperationType.Subtract) pNumber.Value = -pNumber.Value;
-                            token = pNext;
-                        }
-                        else
-                        {
-                            _CurrentReadPosition = iPos;
-                        }
-                    }
-                    else
-                    {
-                        _CurrentReadPosition = iPos;
-                    }
-                }
-            }
-
             _PreviousToken = token;
 
             return token;
@@ -411,8 +383,19 @@ namespace dg.Utilities.Maths
                     Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Not a number");
                     return 0;
                 }
-                else Success = true;
                 return numberToken.Value;
+            }
+            else if (token.Type == MathToken.TokenType.Operation)
+            {
+                MathTokenOperation tokenOperation = token as MathTokenOperation;
+                if (null != tokenOperation && (tokenOperation.Operation == MathTokenOperation.OperationType.Add ||
+                        tokenOperation.Operation == MathTokenOperation.OperationType.Subtract))
+                {
+                    Tokenizer.Revert();
+                    return 0;
+                }
+                Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Not a number");
+                return 0;
             }
             else
             {
