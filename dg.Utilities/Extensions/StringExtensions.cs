@@ -254,6 +254,25 @@ namespace dg.Utilities
         {
             if (input == null || input.Length == 0) return input;
 
+            return input.ReplaceSharps(key => { string value = null; keyValueMap.TryGetValue(key, out value); return value; }, preserveNotFoundValues);
+        }
+
+        public delegate string SharpCodeValueDelegate(string code);
+
+        /// <summary>
+        /// Replaces codes in the strings with the values from the dictionary.
+        /// Code may appear in the #CODE# form.
+        /// Use double sharp (##) to escape where a literal is required.
+        /// Keys that do not appear in the dictionary - will not be replaced
+        /// </summary>
+        /// <param name="text">The input text</param>
+        /// <param name="supplier">Supplier of values for specific codes</param>
+        /// <param name="preserveNotFoundValues">Dictionary of the code->value mappings</param>
+        /// <returns>Processed data after replacing the sharps with the corresponding values</returns>
+        public static string ReplaceSharps(this string input, SharpCodeValueDelegate supplier, bool preserveNotFoundValues = true)
+        {
+            if (input == null || input.Length == 0) return input;
+
             StringBuilder sb = new StringBuilder();
             int firstSharp = -1;
             bool sharpOk = false;
@@ -274,17 +293,19 @@ namespace dg.Utilities
                     }
                     else
                     {
-                        sharpOk = false;
+                        string value = null;
                         if (j - firstSharp > 1)
                         {
-                            string val;
-                            sharpOk = keyValueMap.TryGetValue(input.Substring(firstSharp + 1, j - firstSharp - 1), out val);
-                            if (sharpOk)
+                            if (supplier != null)
                             {
-                                sb.Append(val);
+                                value = supplier(input.Substring(firstSharp + 1, j - firstSharp - 1));
+                            }
+                            if (value != null)
+                            {
+                                sb.Append(value);
                             }
                         }
-                        if (sharpOk || !preserveNotFoundValues)
+                        if (value != null || !preserveNotFoundValues)
                         {
                             firstSharp = -1;
                         }
