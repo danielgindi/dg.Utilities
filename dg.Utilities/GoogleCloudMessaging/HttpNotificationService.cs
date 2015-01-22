@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -24,8 +25,8 @@ namespace dg.Utilities.GoogleCloudMessaging
             set { notificationSender.GcmAccessPointUrl = value; }
         }
 
-        private SingleThreadedTimer timer = new SingleThreadedTimer();
-        private List<HttpNotificationPayload> currentQueue = new List<HttpNotificationPayload>();
+        private SingleThreadedTimer timer = null;
+        private ConcurrentQueue<HttpNotificationPayload> currentQueue = new ConcurrentQueue<HttpNotificationPayload>();
         private NotificationSender notificationSender = new NotificationSender();
 
         #region IDisposable members
@@ -52,24 +53,21 @@ namespace dg.Utilities.GoogleCloudMessaging
         {
             notificationSender.GcmApiKey = GcmApiKey;
             GCM_TIMER_MS = TimerStepMilliseconds;
+
+            timer = new SingleThreadedTimer();
+            timer.Milliseconds = GCM_TIMER_MS;
+            timer.Elapsed += DoSendGcmQueue;
         }
         public delegate void GcmResultDelegate(NotificationDeliveryResult result);
 
         public void SendMessage(HttpNotificationPayload Payload, GcmResultDelegate Result)
         {
-            lock (currentQueue)
+            Payload.ContextData = Result;
+            currentQueue.Enqueue(Payload);
+
+            if (!timer.IsStarted)
             {
-                Payload.ContextData = Result;
-                currentQueue.Add(Payload);
-            }
-            lock (timer)
-            {
-                if (!timer.IsStarted)
-                {
-                    timer.Milliseconds = GCM_TIMER_MS;
-                    timer.Elapsed += DoSendGcmQueue;
-                    timer.Start();
-                }
+                timer.Start();
             }
         }
         public void SendMessage(string RegistrationId, GcmResultDelegate Result)
@@ -109,30 +107,41 @@ namespace dg.Utilities.GoogleCloudMessaging
 
         private void DoSendGcmQueue(Object sender, EventArgs e)
         {
-            List<HttpNotificationPayload> queue = null;
-            lock (currentQueue)
+            ConcurrentQueue<HttpNotificationPayload> failedQueue = new ConcurrentQueue<HttpNotificationPayload>();
+
+            SendGcmQueue(currentQueue, ref failedQueue);
+
+            if (failedQueue.Count > 0)
             {
-                queue = currentQueue;
-                currentQueue = new List<HttpNotificationPayload>();
+                HttpNotificationPayload payload = null;
+                while (failedQueue.TryDequeue(out payload))
+                {
+                    // Return these to the end of the queue to try next time
+                    currentQueue.Enqueue(payload);
+                }
             }
-            if (queue.Count > 0)
+        }
+
+        private void SendGcmQueue(ConcurrentQueue<HttpNotificationPayload> queue, ref ConcurrentQueue<HttpNotificationPayload> failedQueue)
+        {
+            if (queue.Count == 0) return;
+
+            List<NotificationDeliveryResult> results = new List<NotificationDeliveryResult>();
+
+            HttpNotificationPayload payload = null;
+            while (queue.TryDequeue(out payload))
             {
                 try
                 {
-                    List<NotificationDeliveryResult> results = new List<NotificationDeliveryResult>();
                     NotificationDeliveryResult result;
-                    foreach (HttpNotificationPayload payload in queue)
-                    {
-                        result = notificationSender.SendHttpPayload(payload);
-                        results.Add(result);
 
-                        if (result.HttpStatusCode != HttpStatusCode.OK && result.HttpStatusCode != HttpStatusCode.Unauthorized)
-                        {
-                            lock (currentQueue)
-                            { // Return to end of the queue to try next time
-                                currentQueue.Add(payload);
-                            }
-                        }
+                    result = notificationSender.SendHttpPayload(payload);
+                    results.Add(result);
+
+                    if (result.HttpStatusCode != HttpStatusCode.OK && result.HttpStatusCode != HttpStatusCode.Unauthorized)
+                    {
+                        // Return to end of the queue to try next time
+                        failedQueue.Enqueue(payload);
                     }
 
                     foreach (NotificationDeliveryResult aResult in results)
@@ -145,16 +154,8 @@ namespace dg.Utilities.GoogleCloudMessaging
                 }
                 catch
                 {
-                }
-            }
-            lock (timer)
-            {
-                lock (currentQueue)
-                {
-                    if (currentQueue.Count == 0 && timer.IsStarted)
-                    {
-                        timer.Stop();
-                    }
+                    // Return to end of the queue to try next time
+                    failedQueue.Enqueue(payload);
                 }
             }
         }

@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Threading;
 using dg.Utilities.Threading;
+using System.Collections.Concurrent;
 
 namespace dg.Utilities.Apns
 {
@@ -16,8 +17,7 @@ namespace dg.Utilities.Apns
         private int APNS_TIMER_MS = 500;
 
         private SingleThreadedTimer timer = null;
-        private List<NotificationPayload> currentQueue = null;
-        private Mutex notificationChannelMutex = new Mutex();
+        private ConcurrentQueue<NotificationPayload> currentQueue = new ConcurrentQueue<NotificationPayload>();
         private NotificationChannel notificationChannel = null;
 
         #region IDisposable members
@@ -40,11 +40,6 @@ namespace dg.Utilities.Apns
                     notificationChannel.Dispose();
                     notificationChannel = null;
                 }
-                if (notificationChannelMutex != null)
-                {
-                    notificationChannelMutex.Dispose();
-                    notificationChannelMutex = null;
-                }
             }
             // Now clean up Native Resources (Pointers)
         }
@@ -58,26 +53,20 @@ namespace dg.Utilities.Apns
             APNS_TIMER_MS = TimerStepMilliseconds;
 
             timer = new SingleThreadedTimer();
-            currentQueue = new List<NotificationPayload>();
+            timer.Milliseconds = APNS_TIMER_MS;
+            timer.Elapsed += DoSendApnsQueue;
         }
         public delegate void APNSErrorDelegate();
 
         public void SendMessage(string DeviceToken, string Message, int? Badge, string Sound, APNSErrorDelegate Rejected)
         {
-            lock (currentQueue)
+            NotificationPayload payload = new NotificationPayload(DeviceToken, Message, Badge, Sound);
+            payload.ContextData = Rejected;
+            currentQueue.Enqueue(payload);
+
+            if (!timer.IsStarted)
             {
-                NotificationPayload payload = new NotificationPayload(DeviceToken, Message, Badge, Sound);
-                payload.ContextData = Rejected;
-                currentQueue.Add(payload);
-            }
-            lock (timer)
-            {
-                if (!timer.IsStarted)
-                {
-                    timer.Milliseconds = APNS_TIMER_MS;
-                    timer.Elapsed += DoSendApnsQueue;
-                    timer.Start();
-                }
+                timer.Start();
             }
         }
         public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, APNSErrorDelegate Rejected)
@@ -86,84 +75,84 @@ namespace dg.Utilities.Apns
         }
         public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, Dictionary<string, object[]> CustomItems, APNSErrorDelegate Rejected)
         {
-            lock (currentQueue)
+            NotificationPayload payload = new NotificationPayload(DeviceToken, Alert, Badge, Sound);
+            payload.ContextData = Rejected;
+            if (CustomItems != null)
             {
-                NotificationPayload payload = new NotificationPayload(DeviceToken, Alert, Badge, Sound);
-                payload.ContextData = Rejected;
-                if (CustomItems != null)
+                foreach (string key in CustomItems.Keys)
                 {
-                    foreach (string key in CustomItems.Keys)
-                    {
-                        payload.AddCustom(key, CustomItems[key]);
-                    }
+                    payload.AddCustom(key, CustomItems[key]);
                 }
-                currentQueue.Add(payload);
             }
-            lock (timer)
+            currentQueue.Enqueue(payload);
+
+            if (!timer.IsStarted)
             {
-                if (!timer.IsStarted)
+                timer.Start();
+            }
+        }
+
+        private void DoSendApnsQueue(Object sender, EventArgs e)
+        {
+            ConcurrentQueue<NotificationPayload> failedQueue = new ConcurrentQueue<NotificationPayload>();
+
+            SendApnsQueue(currentQueue, ref failedQueue);
+
+            if (failedQueue.Count > 0)
+            {
+                NotificationPayload payload = null;
+                while (failedQueue.TryDequeue(out payload))
                 {
-                    timer.Milliseconds = APNS_TIMER_MS;
-                    timer.Elapsed += DoSendApnsQueue;
-                    timer.Start();
+                    // Return these to the end of the queue to try next time
+                    currentQueue.Enqueue(payload);
                 }
             }
         }
-        private void DoSendApnsQueue(Object sender, EventArgs e)
+
+        private void SendApnsQueue(ConcurrentQueue<NotificationPayload> queue, ref ConcurrentQueue<NotificationPayload> failedQueue)
         {
-            List<NotificationPayload> queue = null;
-            lock (currentQueue)
+            if (queue.Count == 0) return;
+
+            try
             {
-                queue = currentQueue;
-                currentQueue = new List<NotificationPayload>();
+                if (notificationChannel == null)
+                {
+                    notificationChannel = new NotificationChannel(APNS_Sandbox, APNS_P12, APNS_P12PWD);
+                }
             }
-            if (queue.Count > 0)
+            catch
             {
-                notificationChannelMutex.WaitOne();
+            }
+
+            List<NotificationPayload> payloads = new List<NotificationPayload>();
+
+            NotificationPayload payload;
+            while (queue.TryDequeue(out payload))
+            {
+                payloads.Add(payload);
+            }
+
+            if (notificationChannel != null)
+            {
                 try
                 {
-                    if (notificationChannel == null) notificationChannel = new NotificationChannel(APNS_Sandbox, APNS_P12, APNS_P12PWD);
-                }
-                catch
-                {
-                    lock (currentQueue)
+                    List<NotificationDeliveryError> errors = notificationChannel.SendToApple(payloads);
+                    foreach (NotificationDeliveryError error in errors)
                     {
-                        currentQueue.InsertRange(0, queue);
-                    }
-                }
-                notificationChannelMutex.ReleaseMutex();
-
-                if (notificationChannel != null)
-                {
-                    try
-                    {
-                        List<NotificationDeliveryError> errors = notificationChannel.SendToApple(queue);
-                        NotificationPayload payload;
-                        foreach (NotificationDeliveryError error in errors)
+                        payload = error.Payload;
+                        if (payload != null)
                         {
-                            payload = error.Payload;
-                            if (payload != null)
+                            if (payload.ContextData != null && payload.ContextData is APNSErrorDelegate)
                             {
-                                if (payload.ContextData != null && payload.ContextData is APNSErrorDelegate)
-                                {
-                                    ((APNSErrorDelegate)payload.ContextData)();
-                                }
+                                ((APNSErrorDelegate)payload.ContextData)();
                             }
                         }
                     }
-                    catch
-                    {
-                    }
                 }
-            }
-            lock (timer)
-            {
-                lock (currentQueue)
+                catch
                 {
-                    if (currentQueue.Count == 0 && timer.IsStarted)
-                    {
-                        timer.Stop();
-                    }
+                    // Return to end of the queue to try next time
+                    failedQueue.Enqueue(payload);
                 }
             }
         }
