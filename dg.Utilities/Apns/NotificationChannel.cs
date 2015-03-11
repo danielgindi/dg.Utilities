@@ -149,7 +149,19 @@ namespace dg.Utilities.Apns
             {
                 if (!_connected)
                 {
-                    Connect(_host, NotificationPort, _certificates);
+                    ConnectResult res = Connect(_host, NotificationPort, _certificates);
+
+                    if (res == ConnectResult.SSLError)
+                    {
+                        return true; // Allegedly finished sending. Do not report "errors" as these can cause removing tokens from DB
+                    }
+
+                    if (res == ConnectResult.Failed)
+                    {
+                        _connectionReturnedError = true;
+                        break;
+                    }
+
                     info = new MyAsyncInfo(_apnsStream);
                     didConnect = true;
                     ar = _apnsStream.BeginRead(info.ReadBuffer, 0, 6, OnAsyncRead, info);
@@ -257,7 +269,14 @@ namespace dg.Utilities.Apns
             _manualResetEvent.Set();
         }
 
-        private void Connect(string host, int port, X509CertificateCollection certificates)
+        private enum ConnectResult
+        {
+            Success,
+            Failed,
+            SSLError
+        }
+
+        private ConnectResult Connect(string host, int port, X509CertificateCollection certificates)
         {
             Disconnect();
 
@@ -265,6 +284,7 @@ namespace dg.Utilities.Apns
             {
                 Debug.WriteLine("Apns: Connecting to apple server.");
             }
+
             try
             {
                 _apnsClient = new TcpClient();
@@ -276,6 +296,7 @@ namespace dg.Utilities.Apns
                 {
                     Debug.WriteLine("Apns: ERROR: An error occurred while connecting to Apns servers - " + ex.Message);
                 }
+                return ConnectResult.Failed;
             }
 
             bool sslOpened = OpenSslStream(host, certificates);
@@ -287,8 +308,10 @@ namespace dg.Utilities.Apns
                 {
                     Debug.WriteLine("Apns: Connected.");
                 }
+                return ConnectResult.Success;
             }
 
+            return ConnectResult.SSLError;
         }
 
         private void Disconnect()
@@ -337,7 +360,11 @@ namespace dg.Utilities.Apns
             {
                 if (generalSwitch.TraceError)
                 {
-                    Debug.WriteLine("Apns: ERROR: " + ex.Message);
+                    Debug.WriteLine("Apns: ERROR: " + ex.Message + ". Inner: " + ex.InnerException.Message);
+                }
+                if (ex.InnerException != null && ex.InnerException.Message.IndexOf(@"revoked", StringComparison.InvariantCultureIgnoreCase) != -1)
+                {
+                    Debug.WriteLine(@"APNS: Certificate revoked!");
                 }
                 return false;
             }
@@ -454,7 +481,9 @@ namespace dg.Utilities.Apns
                 }
 
                 if (!_connected)
+                {
                     Connect(_feedbackHost, FeedbackPort, _certificates);
+                }
 
                 if (_connected)
                 {
