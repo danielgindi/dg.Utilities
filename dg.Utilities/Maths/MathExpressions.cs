@@ -102,7 +102,7 @@ namespace dg.Utilities.Maths
 
             MathToken token = null;
 
-            char decimalPoint = _CultureInfo.NumberFormat.NumberDecimalSeparator[0];
+            char decimalPoint = CultureInfo.NumberFormat.NumberDecimalSeparator[0];
 
             char c = '\0', nc;
 		    int iPosStart = 0;
@@ -128,7 +128,7 @@ namespace dg.Utilities.Maths
                         token = new MathTokenNumber(Decimal.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
                     }
                 }
-                else if (!bReadingOperation && _AlphabeitValueDictionary != null && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+                else if (!bReadingOperation && VarDictionary != null && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
                 {
                     if (!bReadingAlphabeit)
                     {
@@ -139,8 +139,15 @@ namespace dg.Utilities.Maths
                     {
                         string key = _InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart);
                         decimal value = 0;
-                        _AlphabeitValueDictionary.TryGetValue(key, out value);
-                        token = new MathTokenNumber(value);
+                        if (VarDictionary.TryGetValue(key, out value) || !FailOnMissingVar)
+                        {
+                            token = new MathTokenNumber(value);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("MathTokenizer: Missing variable \"" + key + "\"");
+                            return null;
+                        }
                     }
 			    }
 			    else if (c == '(')
@@ -201,19 +208,9 @@ namespace dg.Utilities.Maths
             _ReturnPreviousToken = true;
         }
 
-        private CultureInfo _CultureInfo = CultureInfo.InvariantCulture;
-        public System.Globalization.CultureInfo CultureInfo
-        {
-            get { return _CultureInfo; }
-            set { _CultureInfo = value; }
-        }
-
-        private Dictionary<string, decimal> _AlphabeitValueDictionary = null;
-        public Dictionary<string, decimal> AlphabeitValueDictionary
-        {
-            get { return _AlphabeitValueDictionary; }
-            set { _AlphabeitValueDictionary = value; }
-        }
+        public CultureInfo CultureInfo = CultureInfo.InvariantCulture;
+        public Dictionary<string, decimal> VarDictionary = null;
+        public bool FailOnMissingVar = false;
     }
 
     public static class MathExpressionParser
@@ -236,17 +233,22 @@ namespace dg.Utilities.Maths
         {
             return ParseSimpleExpression(Expression, DecimalSpecifier, null, out Success);
         }
-        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, Dictionary<string, decimal> AlphabeitValueDictionary, out bool Success)
+        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, Dictionary<string, decimal> VarDictionary, out bool Success)
+        {
+            return ParseSimpleExpression(Expression, DecimalSpecifier, VarDictionary, false, out Success);
+        }
+        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, Dictionary<string, decimal> VarDictionary, bool FailOnMissingVar, out bool Success)
         {
             MathTokenizer tokenizer = new MathTokenizer(Expression);
             if (DecimalSpecifier != null)
             {
                 tokenizer.CultureInfo = DecimalSpecifier;
             }
-            if (AlphabeitValueDictionary != null)
+            if (VarDictionary != null)
             {
-                tokenizer.AlphabeitValueDictionary = AlphabeitValueDictionary;
+                tokenizer.VarDictionary = VarDictionary;
             }
+            tokenizer.FailOnMissingVar = FailOnMissingVar;
 
             decimal value = ParseSimpleExpression_InnerExpr(tokenizer, out Success);
             if (Success)
