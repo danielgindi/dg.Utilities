@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace dg.Utilities.Maths
 {
-	internal class MathToken
+    internal class MathToken
     {
         internal enum TokenType
         {
@@ -20,54 +20,40 @@ namespace dg.Utilities.Maths
 
         internal MathToken(TokenType Type)
         {
-            _Type = Type;
+            this.Type = Type;
         }
 
-        private TokenType _Type;
-        virtual internal TokenType Type
-        {
-            get { return _Type; }
-            set { _Type = value; }
-        }
-	}
-    internal class MathTokenNumber : MathToken
+        internal TokenType Type;
+    }
+    internal class MathTokenNumber<T> : MathToken where T : struct, IConvertible
     {
-        internal MathTokenNumber(decimal Value) : base(MathToken.TokenType.Number)
+        internal MathTokenNumber(T Value)
+            : base(MathToken.TokenType.Number)
         {
-            _Value = Value;
+            this.Value = Value;
         }
 
-        private decimal _Value;
-        virtual internal decimal Value
-        {
-            get { return _Value; }
-            set { _Value = value; }
-        }
-	}
+        internal T Value;
+    }
     internal class MathTokenOperation : MathToken
-	{
+    {
         internal enum OperationType
         {
-		    Add,
-		    Subtract,
-		    Multiply,
-		    Divide
+            Add,
+            Subtract,
+            Multiply,
+            Divide
         }
 
         internal MathTokenOperation(OperationType Operation)
             : base(MathToken.TokenType.Operation)
         {
-            _Operation = Operation;
+            this.Operation = Operation;
         }
 
-        private OperationType _Operation;
-        virtual internal OperationType Operation
-        {
-            get { return _Operation; }
-            set { _Operation = value; }
-        }
-	}
-    internal class MathTokenizer
+        internal OperationType Operation;
+    }
+    internal class MathTokenizer<T> where T : struct, IConvertible
     {
         private string _InputString;
         private MathToken _PreviousToken;
@@ -94,26 +80,26 @@ namespace dg.Utilities.Maths
         }
         internal MathToken GetNextToken()
         {
-		    if (_ReturnPreviousToken)
-		    {
-			    _ReturnPreviousToken = false;
-			    return _PreviousToken;
-		    }
+            if (_ReturnPreviousToken)
+            {
+                _ReturnPreviousToken = false;
+                return _PreviousToken;
+            }
 
             MathToken token = null;
 
             char decimalPoint = CultureInfo.NumberFormat.NumberDecimalSeparator[0];
 
             char c = '\0', nc;
-		    int iPosStart = 0;
+            int iPosStart = 0;
             bool bReadingNumber = false;
             bool bReadingAlphabeit = false;
-		    bool bReadingOperation = false;
+            bool bReadingOperation = false;
 
             nc = _CurrentReadPosition == _InputString.Length ? '\0' : _InputString[_CurrentReadPosition]; ;
-		    while (nc != '\0' && null==token)
-		    {
-			    c=nc;
+            while (nc != '\0' && null == token)
+            {
+                c = nc;
                 nc = (++_CurrentReadPosition) == _InputString.Length ? '\0' : _InputString[_CurrentReadPosition];
 
                 if (!bReadingOperation && ((c >= '0' && c <= '9') || c == decimalPoint))
@@ -125,7 +111,30 @@ namespace dg.Utilities.Maths
                     }
                     if (!((nc >= '0' && nc <= '9') || nc == decimalPoint))
                     {
-                        token = new MathTokenNumber(Decimal.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        if (typeof(T) == typeof(Double))
+                        {
+                            token = new MathTokenNumber<T>((T)(object)Double.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        }
+                        else if (typeof(T) == typeof(Single))
+                        {
+                            token = new MathTokenNumber<T>((T)(object)Single.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        }
+                        else if (typeof(T) == typeof(Decimal))
+                        {
+                            token = new MathTokenNumber<T>((T)(object)Decimal.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        }
+                        else if (typeof(T) == typeof(Int32))
+                        {
+                            token = new MathTokenNumber<T>((T)(object)Int32.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        }
+                        else if (typeof(T) == typeof(Int64))
+                        {
+                            token = new MathTokenNumber<T>((T)(object)Int64.Parse(_InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart), NumberStyles.AllowDecimalPoint, CultureInfo));
+                        }
+                        else
+                        {
+                            throw new NotSupportedException("The supplied type cannot be handled");
+                        }
                     }
                 }
                 else if (!bReadingOperation && VarDictionary != null && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
@@ -138,10 +147,10 @@ namespace dg.Utilities.Maths
                     if (!((nc >= 'a' && nc <= 'z') || (nc >= 'A' && nc <= 'Z')))
                     {
                         string key = _InputString.Substring(iPosStart, _CurrentReadPosition - iPosStart);
-                        decimal value = 0;
+                        T value = default(T);
                         if (VarDictionary.TryGetValue(key, out value) || !FailOnMissingVar)
                         {
-                            token = new MathTokenNumber(value);
+                            token = new MathTokenNumber<T>(value);
                         }
                         else
                         {
@@ -149,42 +158,42 @@ namespace dg.Utilities.Maths
                             return null;
                         }
                     }
-			    }
-			    else if (c == '(')
-			    {
-				    token = new MathToken(MathToken.TokenType.LParen);
-			    }
-			    else if (c == ')')
-			    {
-				    token = new MathToken(MathToken.TokenType.RParen);
-			    }
-			    else if (c != ' ')
-			    {
-				    if (!bReadingOperation) 
-				    {
-					    iPosStart = _CurrentReadPosition-1;
-					    bReadingOperation = true;
-				    }
-				    if (c == '+')
-				    {
-					    token = new MathTokenOperation(MathTokenOperation.OperationType.Add);
-				    }
-				    else if (c == '-')
-				    {
-					    token = new MathTokenOperation(MathTokenOperation.OperationType.Subtract);
-				    }
-				    else if (c == '*')
-				    {
-					    token = new MathTokenOperation(MathTokenOperation.OperationType.Multiply);
-				    }
-				    else if (c == '/')
-				    {
-					    token = new MathTokenOperation(MathTokenOperation.OperationType.Divide);
-				    }
-				    else
-				    {
+                }
+                else if (c == '(')
+                {
+                    token = new MathToken(MathToken.TokenType.LParen);
+                }
+                else if (c == ')')
+                {
+                    token = new MathToken(MathToken.TokenType.RParen);
+                }
+                else if (c != ' ')
+                {
+                    if (!bReadingOperation)
+                    {
+                        iPosStart = _CurrentReadPosition - 1;
+                        bReadingOperation = true;
+                    }
+                    if (c == '+')
+                    {
+                        token = new MathTokenOperation(MathTokenOperation.OperationType.Add);
+                    }
+                    else if (c == '-')
+                    {
+                        token = new MathTokenOperation(MathTokenOperation.OperationType.Subtract);
+                    }
+                    else if (c == '*')
+                    {
+                        token = new MathTokenOperation(MathTokenOperation.OperationType.Multiply);
+                    }
+                    else if (c == '/')
+                    {
+                        token = new MathTokenOperation(MathTokenOperation.OperationType.Divide);
+                    }
+                    else
+                    {
                         Debug.WriteLine("MathTokenizer: Unexpected character");
-					    break;
+                        break;
                     }
                 }
             }
@@ -209,58 +218,58 @@ namespace dg.Utilities.Maths
         }
 
         public CultureInfo CultureInfo = CultureInfo.InvariantCulture;
-        public Dictionary<string, decimal> VarDictionary = null;
+        public Dictionary<string, T> VarDictionary = null;
         public bool FailOnMissingVar = false;
     }
 
-    public static class MathExpressionParser
+    public static class MathExpressionParser<T> where T : struct, IConvertible
     {
-        public static decimal ParseSimpleExpression(string Expression)
+        public static T ParseSimpleExpression(string expression)
         {
-            bool Success;
-            return ParseSimpleExpression(Expression, null, null, out Success);
+            bool success;
+            return ParseSimpleExpression(expression, null, null, out success);
         }
-        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier)
+        public static T ParseSimpleExpression(string expression, CultureInfo decimalSpecifier)
         {
-            bool Success;
-            return ParseSimpleExpression(Expression, DecimalSpecifier, null, out Success);
+            bool success;
+            return ParseSimpleExpression(expression, decimalSpecifier, null, out success);
         }
-        public static decimal ParseSimpleExpression(string Expression, out bool Success)
+        public static T ParseSimpleExpression(string expression, out bool success)
         {
-            return ParseSimpleExpression(Expression, null, null, out Success);
+            return ParseSimpleExpression(expression, null, null, out success);
         }
-        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, out bool Success)
+        public static T ParseSimpleExpression(string expression, CultureInfo decimalSpecifier, out bool success)
         {
-            return ParseSimpleExpression(Expression, DecimalSpecifier, null, out Success);
+            return ParseSimpleExpression(expression, decimalSpecifier, null, out success);
         }
-        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, Dictionary<string, decimal> VarDictionary, out bool Success)
+        public static T ParseSimpleExpression(string expression, CultureInfo decimalSpecifier, Dictionary<string, T> varDictionary, out bool success)
         {
-            return ParseSimpleExpression(Expression, DecimalSpecifier, VarDictionary, false, out Success);
+            return ParseSimpleExpression(expression, decimalSpecifier, varDictionary, false, out success);
         }
-        public static decimal ParseSimpleExpression(string Expression, CultureInfo DecimalSpecifier, Dictionary<string, decimal> VarDictionary, bool FailOnMissingVar, out bool Success)
+        public static T ParseSimpleExpression(string expression, CultureInfo decimalSpecifier, Dictionary<string, T> varDictionary, bool failOnMissingVar, out bool success)
         {
-            MathTokenizer tokenizer = new MathTokenizer(Expression);
-            if (DecimalSpecifier != null)
+            MathTokenizer<T> tokenizer = new MathTokenizer<T>(expression);
+            if (decimalSpecifier != null)
             {
-                tokenizer.CultureInfo = DecimalSpecifier;
+                tokenizer.CultureInfo = decimalSpecifier;
             }
-            if (VarDictionary != null)
+            if (varDictionary != null)
             {
-                tokenizer.VarDictionary = VarDictionary;
+                tokenizer.VarDictionary = varDictionary;
             }
-            tokenizer.FailOnMissingVar = FailOnMissingVar;
+            tokenizer.FailOnMissingVar = failOnMissingVar;
 
-            decimal value = ParseSimpleExpression_InnerExpr(tokenizer, out Success);
-            if (Success)
+            T value = ParseSimpleExpression_InnerExpr(tokenizer, out success);
+            if (success)
             {
                 MathToken token = tokenizer.GetNextToken();
                 if (null != token && token.Type == MathToken.TokenType.End)
                 {
-                    Success = true;
+                    success = true;
                 }
                 else
                 {
-                    Success = false;
+                    success = false;
                 }
             }
             else
@@ -268,22 +277,22 @@ namespace dg.Utilities.Maths
             }
             return value;
         }
-        private static decimal ParseSimpleExpression_InnerExpr(MathTokenizer Tokenizer, out bool Success)
+        private static T ParseSimpleExpression_InnerExpr(MathTokenizer<T> tokenizer, out bool success)
         {
-            decimal component1 = ParseSimpleExpression_InnerFactor(Tokenizer, out Success);
+            dynamic component1 = ParseSimpleExpression_InnerFactor(tokenizer, out success);
 
-            if (Success)
+            if (success)
             {
-                decimal component2;
-                MathToken token = Tokenizer.GetNextToken();
+                T component2;
+                MathToken token = tokenizer.GetNextToken();
                 MathTokenOperation tokenOperation = token as MathTokenOperation;
                 while (null != tokenOperation && tokenOperation.Type == MathToken.TokenType.Operation)
                 {
                     if (tokenOperation.Operation == MathTokenOperation.OperationType.Add ||
                         tokenOperation.Operation == MathTokenOperation.OperationType.Subtract)
                     {
-                        component2 = ParseSimpleExpression_InnerFactor(Tokenizer, out Success);
-                        if (!Success) break;
+                        component2 = ParseSimpleExpression_InnerFactor(tokenizer, out success);
+                        if (!success) break;
 
                         if (tokenOperation.Operation == MathTokenOperation.OperationType.Add)
                         {
@@ -295,35 +304,35 @@ namespace dg.Utilities.Maths
                         }
                     }
                     else break; // Not an Add or Subtract
-                    token = Tokenizer.GetNextToken();
+                    token = tokenizer.GetNextToken();
                     tokenOperation = token as MathTokenOperation;
                 }
                 if (null == token)
                 {
                     Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Token expected");
-                    Success = false;
+                    success = false;
                 }
-                else Tokenizer.Revert();
+                else tokenizer.Revert();
             }
 
             return component1;
         }
-        private static decimal ParseSimpleExpression_InnerFactor(MathTokenizer Tokenizer, out bool Success)
+        private static T ParseSimpleExpression_InnerFactor(MathTokenizer<T> tokenizer, out bool success)
         {
-            decimal factor1 = ParseSimpleExpression_InnerNumber(Tokenizer, out Success);
+            dynamic factor1 = ParseSimpleExpression_InnerNumber(tokenizer, out success);
 
-            if (Success)
+            if (success)
             {
-                decimal factor2;
-                MathToken token = Tokenizer.GetNextToken();
+                T factor2;
+                MathToken token = tokenizer.GetNextToken();
                 MathTokenOperation tokenOperation = token as MathTokenOperation;
                 while (null != tokenOperation && tokenOperation.Type == MathToken.TokenType.Operation)
                 {
                     if (tokenOperation.Operation == MathTokenOperation.OperationType.Multiply ||
                         tokenOperation.Operation == MathTokenOperation.OperationType.Divide)
                     {
-                        factor2 = ParseSimpleExpression_InnerNumber(Tokenizer, out Success);
-                        if (!Success) break;
+                        factor2 = ParseSimpleExpression_InnerNumber(tokenizer, out success);
+                        if (!success) break;
 
                         if (tokenOperation.Operation == MathTokenOperation.OperationType.Multiply)
                         {
@@ -335,42 +344,42 @@ namespace dg.Utilities.Maths
                         }
                     }
                     else break; // Not an Add or Subtract
-                    token = Tokenizer.GetNextToken();
+                    token = tokenizer.GetNextToken();
                     tokenOperation = token as MathTokenOperation;
                 }
                 if (null == token)
                 {
                     Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Token expected");
-                    Success = false;
+                    success = false;
                 }
-                else Tokenizer.Revert();
+                else tokenizer.Revert();
             }
 
             return factor1;
         }
-        private static decimal ParseSimpleExpression_InnerNumber(MathTokenizer Tokenizer, out bool Success)
+        private static T ParseSimpleExpression_InnerNumber(MathTokenizer<T> tokenizer, out bool success)
         {
-            MathToken token = Tokenizer.GetNextToken();
+            MathToken token = tokenizer.GetNextToken();
 
-            Success = false;
+            success = false;
 
             if (null == token)
             {
                 Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: No token available");
-                return 0;
+                return default(T);
             }
 
             if (token.Type == MathToken.TokenType.LParen)
             {
-                decimal value = ParseSimpleExpression_InnerExpr(Tokenizer, out Success);
-                if (Success)
+                T value = ParseSimpleExpression_InnerExpr(tokenizer, out success);
+                if (success)
                 {
-                    MathToken lParenExpected = Tokenizer.GetNextToken();
+                    MathToken lParenExpected = tokenizer.GetNextToken();
                     if (null == lParenExpected || lParenExpected.Type != MathToken.TokenType.RParen)
                     {
                         Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Unbalanced parenthesis");
                     }
-                    else Success = true;
+                    else success = true;
                 }
                 else
                 {// Error inside ParseSimpleExpression_InnerExpr
@@ -379,11 +388,15 @@ namespace dg.Utilities.Maths
             }
             else if (token.Type == MathToken.TokenType.Number)
             {
-                MathTokenNumber numberToken = token as MathTokenNumber;
+                MathTokenNumber<T> numberToken = token as MathTokenNumber<T>;
                 if (null == numberToken)
                 {
                     Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Not a number");
-                    return 0;
+                    return default(T);
+                }
+                else
+                {
+                    success = true;
                 }
                 return numberToken.Value;
             }
@@ -393,16 +406,16 @@ namespace dg.Utilities.Maths
                 if (null != tokenOperation && (tokenOperation.Operation == MathTokenOperation.OperationType.Add ||
                         tokenOperation.Operation == MathTokenOperation.OperationType.Subtract))
                 {
-                    Tokenizer.Revert();
-                    return 0;
+                    tokenizer.Revert();
+                    return default(T);
                 }
                 Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Not a number");
-                return 0;
+                return default(T);
             }
             else
             {
                 Debug.WriteLine("MathExpressionParser:ParseSimpleExpression: Not a number");
-                return 0;
+                return default(T);
             }
         }
     };
