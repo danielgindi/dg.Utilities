@@ -115,10 +115,10 @@ namespace dg.Utilities
             double f = hue / 60 - Math.Floor(hue / 60);
 
             value = value * 255;
-            int v = Convert.ToInt32(value);
-            int p = Convert.ToInt32(value * (1 - saturation));
-            int q = Convert.ToInt32(value * (1 - f * saturation));
-            int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
+            int v = Math.Max(Convert.ToInt32(value), 0);
+            int p = Math.Max(Convert.ToInt32(value * (1 - saturation)), 0);
+            int q = Math.Max(Convert.ToInt32(value * (1 - f * saturation)), 0);
+            int t = Math.Max(Convert.ToInt32(value * (1 - (1 - f) * saturation)), 0);
 
             if (hi == 0) return Color.FromArgb(255, v, t, p);
             else if (hi == 1) return Color.FromArgb(255, q, v, p);
