@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using dg.Utilities.Imaging.Quantizers.Helpers.Pixels;
 using dg.Utilities.Imaging.Quantizers.Helpers.Pixels.Indexed;
 using dg.Utilities.Imaging.Quantizers.Helpers.Pixels.NonIndexed;
+using System.Security;
 
 namespace dg.Utilities.Imaging.Quantizers.Helpers
 {
@@ -13,6 +14,7 @@ namespace dg.Utilities.Imaging.Quantizers.Helpers
     /// 
     /// This is a pixel format independent pixel.
     /// </summary>
+    [SuppressUnmanagedCodeSecurityAttribute()]
     public class Pixel : IDisposable
     {
         #region | Constants |
