@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
@@ -314,7 +314,7 @@ namespace dg.Utilities.Apns
             return ConnectResult.SSLError;
         }
 
-        private void Disconnect()
+        public void Disconnect()
         {
             try
             {
