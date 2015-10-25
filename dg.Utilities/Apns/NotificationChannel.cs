@@ -350,19 +350,21 @@ namespace dg.Utilities.Apns
             {
                 Debug.WriteLine("Apns: Creating SSL connection.");
             }
-            _apnsStream = new SslStream(_apnsClient.GetStream(), false, validateServerCertificate, SelectLocalCertificate);
 
             try
             {
+                _apnsStream = new SslStream(_apnsClient.GetStream(), false, validateServerCertificate, SelectLocalCertificate);
                 _apnsStream.AuthenticateAsClient(host, certificates, System.Security.Authentication.SslProtocols.Tls, false);
             }
-            catch (System.Security.Authentication.AuthenticationException ex)
+            catch (Exception ex)
             {
                 if (generalSwitch.TraceError)
                 {
                     Debug.WriteLine("Apns: ERROR: " + ex.Message + ". Inner: " + ex.InnerException.Message);
                 }
-                if (ex.InnerException != null && ex.InnerException.Message.IndexOf(@"revoked", StringComparison.InvariantCultureIgnoreCase) != -1)
+                if (ex is System.Security.Authentication.AuthenticationException &&
+                    ex.InnerException != null && 
+                    ex.InnerException.Message.IndexOf(@"revoked", StringComparison.InvariantCultureIgnoreCase) != -1)
                 {
                     Debug.WriteLine(@"APNS: Certificate revoked!");
                 }
