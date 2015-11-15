@@ -21,6 +21,7 @@ namespace dg.Utilities.Spreadsheet
         private StringBuilder _OutputTempBuilder = null;
         private bool _IsXml = true;
         private bool _WriteBOM = true;
+        private bool _CsvMultilineSupport = true;
         private List<string> Columns = new List<string>();
         private List<ExcelSheetStyle> Styles = new List<ExcelSheetStyle>();
         private bool _StartWorksheet = false;
@@ -84,6 +85,12 @@ namespace dg.Utilities.Spreadsheet
             set { _WriteBOM = value; }
         }
 
+        public bool CsvMultilineSupport
+        {
+            get { return _CsvMultilineSupport; }
+            set { _CsvMultilineSupport = value; }
+        }
+
         #endregion
 
         #region Helpers
@@ -102,8 +109,11 @@ namespace dg.Utilities.Spreadsheet
             }
             else
             {
-                Value = Value.Replace('\n', ' ');
-                Value = Value.Replace('\r', ' ');
+                if (!CsvMultilineSupport)
+                {
+                    Value = Value.Replace('\n', ' ');
+                    Value = Value.Replace('\r', ' ');
+                }
                 Value = Value.Replace(@"""", @"""""");
             }
             return Value;
