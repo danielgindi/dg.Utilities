@@ -7,9 +7,19 @@ namespace dg.Utilities.CSV
 {
     public class CsvReader : IDisposable
     {
-        public CsvReader(Stream InputStream)
+        private StreamReader StreamReader = null;
+        private Stream _Stream = null;
+        private bool _MultilineSupport = true;
+
+        public CsvReader(Stream inputStream)
         {
-            _Stream = InputStream;
+            _Stream = inputStream;
+        }
+
+        public CsvReader(Stream inputStream, bool multilineSupport)
+        {
+            _Stream = inputStream;
+            _MultilineSupport = multilineSupport;
         }
 
         public void Dispose()
@@ -21,21 +31,30 @@ namespace dg.Utilities.CSV
         {
             if (disposing)
             {
-                if (StreamReader != null) StreamReader.Dispose();
+                if (StreamReader != null)
+                {
+                    StreamReader.Dispose();
+                }
                 StreamReader = null;
-                if (_Stream != null) _Stream.Dispose();
+                if (_Stream != null)
+                {
+                    _Stream.Dispose();
+                }
                 _Stream = null;
             }
             // Now clean up Native Resources (Pointers)
         }
 
-        Stream _Stream = null;
         public Stream Stream
         {
             get { return _Stream; }
         }
 
-        StreamReader StreamReader = null;
+        public bool MultilineSupport
+        {
+            get { return _MultilineSupport; }
+            set { _MultilineSupport = value; }
+        }
 
         /// <summary>
         /// Will read the next row
@@ -51,15 +70,76 @@ namespace dg.Utilities.CSV
                     StreamReader = new StreamReader(_Stream, Encoding.Default, true);
                 }
 
-                List<string> columns = new List<string>();
-                string line, column;
-                char c;
-                bool isQuoted;
-                if (!StreamReader.EndOfStream)
+                if (StreamReader.EndOfStream)
                 {
+                    return null;
+                }
+
+                List<string> columns = new List<string>();
+                StringBuilder sbColumn = new StringBuilder();
+
+                if (_MultilineSupport)
+                {
+                    bool isQuoted = false;
+
+                    while (!StreamReader.EndOfStream)
+                    {
+                        char c = (char)StreamReader.Read();
+
+                        if (isQuoted)
+                        {
+                            if (c == '"')
+                            {
+                                if (!StreamReader.EndOfStream && (char)StreamReader.Peek() == '"')
+                                {
+                                    sbColumn.Append('"');
+                                }
+                                else
+                                {
+                                    isQuoted = false;
+                                }
+                            }
+                            else
+                            {
+                                sbColumn.Append(c);
+                            }
+                        }
+                        else
+                        {
+                            if (c == ',')
+                            {
+                                columns.Add(sbColumn.ToString());
+                                sbColumn.Clear();
+                            }
+                            else if (c == '"')
+                            {
+                                if (sbColumn.Length > 0)
+                                {
+                                    sbColumn.Append(c);
+                                }
+                                else
+                                {
+                                    isQuoted = true;
+                                }
+                            }
+                            else if (c == '\n')
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                sbColumn.Append(c);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    string line;
+                    char c;
+                    bool isQuoted;
+
                     line = StreamReader.ReadLine();
-                    column = "";
-                    columns.Clear();
                     isQuoted = false;
                     for (int j = 0, len = line.Length; j < len; j++)
                     {
@@ -70,7 +150,7 @@ namespace dg.Utilities.CSV
                             {
                                 if (line.Length > j + 1 && line[j + 1] == '"')
                                 {
-                                    column += '"';
+                                    sbColumn.Append('"');
                                     j++;
                                 }
                                 else
@@ -80,21 +160,21 @@ namespace dg.Utilities.CSV
                             }
                             else
                             {
-                                column += c;
+                                sbColumn.Append(c);
                             }
                         }
                         else
                         {
                             if (c == ',')
                             {
-                                columns.Add(column);
-                                column = "";
+                                columns.Add(sbColumn.ToString());
+                                sbColumn.Clear();
                             }
                             else if (c == '"')
                             {
-                                if (column.Length > 0)
+                                if (sbColumn.Length > 0)
                                 {
-                                    column += c;
+                                    sbColumn.Append(c);
                                 }
                                 else
                                 {
@@ -103,14 +183,15 @@ namespace dg.Utilities.CSV
                             }
                             else
                             {
-                                column += c;
+                                sbColumn.Append(c);
                             }
                         }
                     }
-                    columns.Add(column);
-                    return columns.ToArray();
                 }
-                return null;
+
+                columns.Add(sbColumn.ToString());
+
+                return columns.ToArray();
             }
         }
     }
