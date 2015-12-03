@@ -8,7 +8,6 @@ using dg.Utilities.Imaging.Quantizers.ColorCaches.Common;
 using dg.Utilities.Imaging.Quantizers.Ditherers;
 using dg.Utilities.Imaging.Quantizers.PathProviders;
 using dg.Utilities.Imaging.Quantizers;
-using dg.Utilities.Imaging.Quantizing.Helpers;
 
 namespace dg.Utilities.Imaging.Quantizers.Helpers
 {

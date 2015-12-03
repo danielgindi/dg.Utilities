@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class ColorFilter : IImageFilter
     {
@@ -50,7 +50,7 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -62,7 +62,7 @@ namespace dg.Utilities.Imaging.Filters
                     filter = (ColorFilterValue)arg;
                 }
             }
-            if (filter == null) return ImageFilterError.MissingArgument;
+            if (filter == null) return FilterError.MissingArgument;
 
             switch (bmp.Bitmap.PixelFormat)
             {
@@ -71,17 +71,17 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, filter);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, filter);
+                    return ProcessImage32rgba(bmp, filter);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, filter);
+                    return ProcessImage32prgba(bmp, filter);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
 
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, ColorFilterValue filter)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, ColorFilterValue filter)
         {
-            if (filter == null) return ImageFilterError.MissingArgument;
+            if (filter == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -110,11 +110,11 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)value;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, ColorFilterValue filter)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, ColorFilterValue filter)
         {
-            if (filter == null) return ImageFilterError.MissingArgument;
+            if (filter == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -142,15 +142,15 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)value;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, ColorFilterValue filter)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, ColorFilterValue filter)
         {
             return ProcessImage32rgb(bmp, filter);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, ColorFilterValue filter)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, ColorFilterValue filter)
         {
-            if (filter == null) return ImageFilterError.MissingArgument;
+            if (filter == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -182,7 +182,7 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)(value * preAlpha); 
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

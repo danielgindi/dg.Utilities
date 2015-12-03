@@ -4,7 +4,7 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class RedEyeReduction : IImageFilter
     {
@@ -80,7 +80,7 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -92,7 +92,7 @@ namespace dg.Utilities.Imaging.Filters
                     regions.Add((RedEyeRegion)arg);
                 }
             }
-            if (regions.Count == 0) return ImageFilterError.OK;
+            if (regions.Count == 0) return FilterError.OK;
 
             switch (bmp.Bitmap.PixelFormat)
             {
@@ -101,18 +101,18 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, regions);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, regions);
+                    return ProcessImage32rgba(bmp, regions);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, regions);
+                    return ProcessImage32prgba(bmp, regions);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(
+        public FilterError ProcessImage24rgb(
             DirectAccessBitmap bmp,
             List<RedEyeRegion> regions)
         {
-            if (regions.Count == 0) return ImageFilterError.OK;
+            if (regions.Count == 0) return FilterError.OK;
 
             byte[] data = bmp.Bits;
             int stride = bmp.Stride;
@@ -161,13 +161,13 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(
+        public FilterError ProcessImage32rgb(
             DirectAccessBitmap bmp,
             List<RedEyeRegion> regions)
         {
-            if (regions.Count == 0) return ImageFilterError.OK;
+            if (regions.Count == 0) return FilterError.OK;
 
             byte[] data = bmp.Bits;
             int stride = bmp.Stride;
@@ -216,19 +216,19 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(
+        public FilterError ProcessImage32rgba(
             DirectAccessBitmap bmp,
             List<RedEyeRegion> regions)
         {
             return ProcessImage32rgb(bmp, regions);
         }
-        public ImageFilterError ProcessImage32pargb(
+        public FilterError ProcessImage32prgba(
             DirectAccessBitmap bmp,
             List<RedEyeRegion> regions)
         {
-            if (regions.Count == 0) return ImageFilterError.OK;
+            if (regions.Count == 0) return FilterError.OK;
 
             byte[] data = bmp.Bits;
             int stride = bmp.Stride;
@@ -281,7 +281,7 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
        }
     }
 }

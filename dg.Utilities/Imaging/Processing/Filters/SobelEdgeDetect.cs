@@ -4,11 +4,11 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class SobelEdgeDetect : ConvolutionMatrix
     {
-        public new ImageFilterError ProcessImage(
+        public new FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -17,13 +17,13 @@ namespace dg.Utilities.Imaging.Filters
                 -1, 1, 1,
                 0, 1, 2,
                 1, -255, false);
-            Channel channels = Channel.None;
+            FilterColorChannel channels = FilterColorChannel.None;
 
             foreach (object arg in args)
             {
-                if (arg is Channel)
+                if (arg is FilterColorChannel)
                 {
-                    channels |= (Channel)arg;
+                    channels |= (FilterColorChannel)arg;
                 }
             }
 

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class Invert : IImageFilter
     {
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -18,14 +18,15 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp);
+                    return ProcessImage32rgba(bmp);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp);
+                    return ProcessImage32prgba(bmp);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp)
+
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -46,9 +47,10 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)(255 - data[pos2 + 2]);
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp)
+
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -69,13 +71,15 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)(255 - data[pos2 + 2]);
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp)
+
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp)
         {
             return ProcessImage32rgb(bmp);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp)
+
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -99,7 +103,7 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)((255f - (data[pos2 + 2] / preAlpha)) * preAlpha);
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

@@ -8,12 +8,11 @@ using System.IO;
 using dg.Utilities.Imaging.Quantizers.NeuQuant;
 using dg.Utilities.Imaging.Quantizers.Helpers;
 using System.Collections.Generic;
-using dg.Utilities.Imaging.Quantizing.Helpers;
 
-namespace dg.Utilities.Imaging.Encoding
+namespace dg.Utilities.Imaging.Encoders
 {
     /// <summary>
-    /// Upgraded by Daniel Cohen Gindi (danielgindi@gmail.com) - Original author Kevin Weiner, FM Software
+    /// Improved by Daniel Cohen Gindi (danielgindi@gmail.com) - Original author Kevin Weiner, FM Software
     /// </summary>
     public class GifEncoder : IDisposable
     {

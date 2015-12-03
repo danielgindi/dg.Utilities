@@ -4,7 +4,7 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class Emboss : ConvolutionMatrix
     {
@@ -27,7 +27,7 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public new ImageFilterError ProcessImage(
+        public new FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -37,7 +37,7 @@ namespace dg.Utilities.Imaging.Filters
                 0, 1, 2,
                 1, 0, true);
             Amount amount = new Amount(1);
-            Channel channels = Channel.None;
+            FilterColorChannel channels = FilterColorChannel.None;
 
             foreach (object arg in args)
             {
@@ -45,9 +45,9 @@ namespace dg.Utilities.Imaging.Filters
                 {
                     amount = arg as Amount;
                 }
-                else if (arg is Channel)
+                else if (arg is FilterColorChannel)
                 {
-                    channels |= (Channel)arg;
+                    channels |= (FilterColorChannel)arg;
                 }
             }
             kernel.Matrix[1][1] = 5 - amount.Value / 20;

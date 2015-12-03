@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Drawing.Drawing2D;
 using System.IO;
 
-namespace dg.Utilities.Imaging.Encoding
+namespace dg.Utilities.Imaging.Encoders
 {
     /// <summary>
     /// 

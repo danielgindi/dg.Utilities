@@ -4,7 +4,7 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class ConvolutionMatrix : IImageFilter
     {
@@ -263,6 +263,7 @@ namespace dg.Utilities.Imaging.Filters
                 set { if (value == _Normalize) return; _Normalize = value; DoNormalize(); }
             }
         }
+
         public enum Channel
         {
             None = 0,
@@ -273,6 +274,7 @@ namespace dg.Utilities.Imaging.Filters
             RGB = Red | Green | Blue,
             ARGB = Alpha | RGB
         }
+
         public enum AlphaWeighting
         {
             None = 0,
@@ -287,7 +289,7 @@ namespace dg.Utilities.Imaging.Filters
         /// <param name="bmp">Bitmap to process</param>
         /// <param name="args">Matrix3x3 or Matrix5x5, Channel.</param>
         /// <returns>ImageFilterError</returns>
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -310,7 +312,7 @@ namespace dg.Utilities.Imaging.Filters
                     alphaWeighting |= (AlphaWeighting)arg;
                 }
             }
-            if (kernel == null) return ImageFilterError.MissingArgument;
+            if (kernel == null) return FilterError.MissingArgument;
             if (channels == Channel.None) channels = Channel.RGB;
 
             switch (bmp.Bitmap.PixelFormat)
@@ -318,13 +320,13 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format24bppRgb:
                     return ProcessImage24rgb(bmp, kernel, (channels | Channel.Alpha) ^ Channel.Alpha, alphaWeighting);
                 case PixelFormat.Format32bppRgb:
-                    return ProcessImage32argb(bmp, kernel, (channels | Channel.Alpha) ^ Channel.Alpha, alphaWeighting);
+                    return ProcessImage32rgba(bmp, kernel, (channels | Channel.Alpha) ^ Channel.Alpha, alphaWeighting);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, kernel, channels, alphaWeighting);
+                    return ProcessImage32rgba(bmp, kernel, channels, alphaWeighting);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, kernel, channels, alphaWeighting);
+                    return ProcessImage32prgba(bmp, kernel, channels, alphaWeighting);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
 
@@ -344,10 +346,10 @@ namespace dg.Utilities.Imaging.Filters
             }
             return channelClone;
         }
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
         {
-            if (kernel == null) return ImageFilterError.MissingArgument;
-            if (channels == Channel.None) return ImageFilterError.OK;
+            if (kernel == null) return FilterError.MissingArgument;
+            if (channels == Channel.None) return FilterError.OK;
 
             if (kernel.Normalize) kernel.DoNormalize();
 
@@ -473,12 +475,12 @@ namespace dg.Utilities.Imaging.Filters
                     bPos += 3;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
         {
-            if (kernel == null) return ImageFilterError.MissingArgument;
-            if (channels == Channel.None) return ImageFilterError.OK;
+            if (kernel == null) return FilterError.MissingArgument;
+            if (channels == Channel.None) return FilterError.OK;
             if ((bmp.Bitmap.PixelFormat & PixelFormat.Alpha) == 0) alphaWeighting = AlphaWeighting.None;
 
             if (kernel.Normalize) kernel.DoNormalize();
@@ -659,12 +661,12 @@ namespace dg.Utilities.Imaging.Filters
                     bPos += 4;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, MatrixBase kernel, Channel channels, AlphaWeighting alphaWeighting)
         {
-            if (kernel == null) return ImageFilterError.MissingArgument;
-            if (channels == Channel.None) return ImageFilterError.OK;
+            if (kernel == null) return FilterError.MissingArgument;
+            if (channels == Channel.None) return FilterError.OK;
 
             if (kernel.Normalize) kernel.DoNormalize();
 
@@ -855,7 +857,7 @@ namespace dg.Utilities.Imaging.Filters
                     bPos += 4;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

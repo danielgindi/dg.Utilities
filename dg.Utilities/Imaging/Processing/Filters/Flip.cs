@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class Flip : IImageFilter
     {
@@ -15,7 +15,7 @@ namespace dg.Utilities.Imaging.Filters
             Both = Horizontal | Vertical
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -30,7 +30,7 @@ namespace dg.Utilities.Imaging.Filters
                     if ((dir & Direction.Vertical) == Direction.Vertical) bVert = true;
                 }
             }
-            if (!bHorz && !bVert) return ImageFilterError.OK;
+            if (!bHorz && !bVert) return FilterError.OK;
 
             switch (bmp.Bitmap.PixelFormat)
             {
@@ -39,18 +39,18 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, bHorz, bVert);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, bHorz, bVert);
+                    return ProcessImage32rgba(bmp, bHorz, bVert);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, bHorz, bVert);
+                    return ProcessImage32prgba(bmp, bHorz, bVert);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(
+        public FilterError ProcessImage24rgb(
             DirectAccessBitmap bmp,
             bool horz, bool vert)
         {
-            if (!horz && !vert) return ImageFilterError.OK;
+            if (!horz && !vert) return FilterError.OK;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -90,13 +90,13 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2flip + 2] = temp;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(
+        public FilterError ProcessImage32rgb(
             DirectAccessBitmap bmp,
             bool horz, bool vert)
         {
-            if (!horz && !vert) return ImageFilterError.OK;
+            if (!horz && !vert) return FilterError.OK;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -139,15 +139,15 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2flip + 3] = temp;
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(
+        public FilterError ProcessImage32rgba(
             DirectAccessBitmap bmp,
             bool horz, bool vert)
         {
             return ProcessImage32rgb(bmp, horz, vert);
         }
-        public ImageFilterError ProcessImage32pargb(
+        public FilterError ProcessImage32prgba(
             DirectAccessBitmap bmp,
             bool horz, bool vert)
         {

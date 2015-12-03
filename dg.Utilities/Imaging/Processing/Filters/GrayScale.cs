@@ -3,27 +3,20 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class GrayScale : IImageFilter
     {
-        public enum Mode
-        {
-            Natural = 0,
-            NaturalNTSC = 1,
-            Accurate = 2
-        }
-
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
-            Mode mode = Mode.Natural;
+            FilterGrayScaleWeight mode = FilterGrayScaleWeight.Natural;
             foreach (object arg in args)
             {
-                if (arg is Mode)
+                if (arg is FilterGrayScaleWeight)
                 {
-                    mode = (Mode)arg;
+                    mode = (FilterGrayScaleWeight)arg;
                 }
             }
 
@@ -34,14 +27,15 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, mode);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, mode);
+                    return ProcessImage32rgba(bmp, mode);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, mode);
+                    return ProcessImage32prgba(bmp, mode);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, Mode mode)
+
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, FilterGrayScaleWeight mode)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -52,7 +46,7 @@ namespace dg.Utilities.Imaging.Filters
             int pos1, pos2;
             int x, y;
 
-            if (mode == Mode.Accurate)
+            if (mode == FilterGrayScaleWeight.Accurate)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -68,18 +62,26 @@ namespace dg.Utilities.Imaging.Filters
             else
             {
                 float rL = 0, gL = 0, bL = 0;
-                if (mode == Mode.NaturalNTSC)
+
+                if (mode == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    rL = ImagingUtility.RedLuminosityNTSC;
-                    gL = ImagingUtility.GreenLuminosityNTSC;
-                    bL = ImagingUtility.BlueLuminosityNTSC;
+                    rL = GrayScaleMultiplier.NtscRed;
+                    gL = GrayScaleMultiplier.NtscGreen;
+                    bL = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (mode == FilterGrayScaleWeight.Natural)
+                {
+                    rL = GrayScaleMultiplier.NaturalRed;
+                    gL = GrayScaleMultiplier.NaturalGreen;
+                    bL = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    rL = ImagingUtility.RedLuminosity;
-                    gL = ImagingUtility.GreenLuminosity;
-                    bL = ImagingUtility.BlueLuminosity;
+                    rL = GrayScaleMultiplier.AccurateRed;
+                    gL = GrayScaleMultiplier.AccurateGreen;
+                    bL = GrayScaleMultiplier.AccurateBlue;
                 }
+
                 for (y = bmp.StartY; y < endY; y++)
                 {
                     pos1 = stride * y;
@@ -93,9 +95,10 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, Mode mode)
+
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, FilterGrayScaleWeight mode)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -106,7 +109,7 @@ namespace dg.Utilities.Imaging.Filters
             int pos1, pos2;
             int x, y;
 
-            if (mode == Mode.Accurate)
+            if (mode == FilterGrayScaleWeight.Accurate)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -122,18 +125,26 @@ namespace dg.Utilities.Imaging.Filters
             else
             {
                 float rL = 0, gL = 0, bL = 0;
-                if (mode == Mode.NaturalNTSC)
+
+                if (mode == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    rL = ImagingUtility.RedLuminosityNTSC;
-                    gL = ImagingUtility.GreenLuminosityNTSC;
-                    bL = ImagingUtility.BlueLuminosityNTSC;
+                    rL = GrayScaleMultiplier.NtscRed;
+                    gL = GrayScaleMultiplier.NtscGreen;
+                    bL = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (mode == FilterGrayScaleWeight.Natural)
+                {
+                    rL = GrayScaleMultiplier.NaturalRed;
+                    gL = GrayScaleMultiplier.NaturalGreen;
+                    bL = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    rL = ImagingUtility.RedLuminosity;
-                    gL = ImagingUtility.GreenLuminosity;
-                    bL = ImagingUtility.BlueLuminosity;
+                    rL = GrayScaleMultiplier.AccurateRed;
+                    gL = GrayScaleMultiplier.AccurateGreen;
+                    bL = GrayScaleMultiplier.AccurateBlue;
                 }
+
                 for (y = bmp.StartY; y < endY; y++)
                 {
                     pos1 = stride * y;
@@ -148,13 +159,15 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, Mode mode)
+
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, FilterGrayScaleWeight mode)
         {
             return ProcessImage32rgb(bmp, mode);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, Mode mode)
+
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, FilterGrayScaleWeight mode)
         {
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -166,7 +179,7 @@ namespace dg.Utilities.Imaging.Filters
             int x, y;
             float preAlpha;
 
-            if (mode == Mode.Accurate)
+            if (mode == FilterGrayScaleWeight.Accurate)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -188,17 +201,24 @@ namespace dg.Utilities.Imaging.Filters
             else
             {
                 float rL = 0, gL = 0, bL = 0;
-                if (mode == Mode.NaturalNTSC)
+
+                if (mode == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    rL = ImagingUtility.RedLuminosityNTSC;
-                    gL = ImagingUtility.GreenLuminosityNTSC;
-                    bL = ImagingUtility.BlueLuminosityNTSC;
+                    rL = GrayScaleMultiplier.NtscRed;
+                    gL = GrayScaleMultiplier.NtscGreen;
+                    bL = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (mode == FilterGrayScaleWeight.Natural)
+                {
+                    rL = GrayScaleMultiplier.NaturalRed;
+                    gL = GrayScaleMultiplier.NaturalGreen;
+                    bL = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    rL = ImagingUtility.RedLuminosity;
-                    gL = ImagingUtility.GreenLuminosity;
-                    bL = ImagingUtility.BlueLuminosity;
+                    rL = GrayScaleMultiplier.AccurateRed;
+                    gL = GrayScaleMultiplier.AccurateGreen;
+                    bL = GrayScaleMultiplier.AccurateBlue;
                 }
 
                 for (y = bmp.StartY; y < endY; y++)
@@ -220,7 +240,7 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

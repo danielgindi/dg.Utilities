@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Quantizing.Helpers
+namespace dg.Utilities.Imaging.Quantizers.Helpers
 {
     public static class PixelFormatUtility
     {

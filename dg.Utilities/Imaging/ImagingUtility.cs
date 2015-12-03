@@ -5,26 +5,15 @@ using System.Collections;
 using System.Runtime.InteropServices;
 using System.Drawing.Drawing2D;
 using System.Collections.Generic;
-using dg.Utilities.Imaging.Encoding;
+using dg.Utilities.Imaging.Encoders;
 using dg.Utilities.Imaging.Quantizers.Helpers;
 using dg.Utilities.Imaging.Quantizers.XiaolinWu;
+using dg.Utilities.Imaging.Decoders;
 
-/// <summary>
-/// ImagesManager class
-/// Written By Daniel Cohen Gindi (danielgindi@gmail.com)
-/// Updated on 2009-05-07
-/// </summary>
 namespace dg.Utilities.Imaging
 {
     public static partial class ImagingUtility
     {
-        public const float RedLuminosityNTSC = 0.299f;
-        public const float GreenLuminosityNTSC = 0.587f;
-        public const float BlueLuminosityNTSC = 0.114f;
-        public const float RedLuminosity = 0.3086f;
-        public const float GreenLuminosity = 0.6094f;
-        public const float BlueLuminosity = 0.0820f;
-
         public static int ComputeStride(int width, int bitsPerPixel)
         {
             int stride = width * (bitsPerPixel / 8);
@@ -84,229 +73,6 @@ namespace dg.Utilities.Imaging
                 case 4: red = (int)t; green = (int)p; blue = (int)v; return;
                 default: red = (int)v; green = (int)p; blue = (int)q; return;
             }
-        }
-
-
-        public static ImageFilterError CalculateHistogram(DirectAccessBitmap dab, Channel channel, out int[] values)
-        {
-            return CalculateHistogram(dab, channel, out values, GrayMultiplier.None);
-        }
-        public static ImageFilterError CalculateHistogram(DirectAccessBitmap dab, Channel channel, out int[] values, GrayMultiplier grayMultiplier)
-        {
-            values = null;
-            if (dab == null) return ImageFilterError.InvalidArgument;
-            if (dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format24bppRgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppRgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppArgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-            {
-                return ImageFilterError.IncompatiblePixelFormat;
-            }
-
-            values = new int[256];
-
-            if (channel == Channel.Alpha &&
-                (dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ||
-                dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppRgb))
-            {
-                values[255] = dab.Width * dab.Height;
-                return ImageFilterError.OK;
-            }
-
-            int cx = dab.Width;
-            int cy = dab.Height;
-            int endX = cx + dab.StartX;
-            int endY = cy + dab.StartY;
-            int pixelBytes = dab.PixelFormatSize / 8;
-            int endXb = endX * pixelBytes;
-            byte[] data = dab.Bits;
-            int stride = dab.Stride;
-            int pos1, pos2;
-            int x, y;
-
-            if (channel == Channel.Gray)
-            {
-                if (grayMultiplier == GrayMultiplier.None)
-                {
-                    int value;
-                    if (dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-                    {
-                        float preAlpha;
-                        for (y = dab.StartY; y < endY; y++)
-                        {
-                            pos1 = stride * y;
-                            for (x = dab.StartX; x < endX; x++)
-                            {
-                                pos2 = pos1 + x * pixelBytes;
-                                preAlpha = (float)data[pos2 + 3];
-                                if (preAlpha > 0) preAlpha = preAlpha / 255f;
-                                value = (byte)(data[pos2 + 2] / preAlpha);
-                                value += (byte)(data[pos2 + 1] / preAlpha);
-                                value += (byte)(data[pos2] / preAlpha);
-                                values[(byte)Math.Round(value / 3d)]++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (y = dab.StartY; y < endY; y++)
-                        {
-                            pos1 = stride * y;
-                            for (x = dab.StartX; x < endX; x++)
-                            {
-                                pos2 = pos1 + x * pixelBytes;
-                                value = data[pos2 + 2];
-                                value += data[pos2 + 1];
-                                value += data[pos2];
-                                values[(byte)Math.Round(value / 3d)]++;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    double lumR, lumG, lumB;
-
-                    if (grayMultiplier == GrayMultiplier.NaturalNTSC)
-                    {
-                        lumR = RedLuminosityNTSC;
-                        lumG = GreenLuminosityNTSC;
-                        lumB = BlueLuminosityNTSC;
-                    }
-                    else
-                    {
-                        lumR = RedLuminosity;
-                        lumG = GreenLuminosity;
-                        lumB = BlueLuminosity;
-                    }
-
-                    if (dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-                    {
-                        float preAlpha;
-                        for (y = dab.StartY; y < endY; y++)
-                        {
-                            pos1 = stride * y;
-                            for (x = dab.StartX; x < endX; x++)
-                            {
-                                pos2 = pos1 + x * pixelBytes;
-                                preAlpha = (float)data[pos2 + 3];
-                                if (preAlpha > 0) preAlpha = preAlpha / 255f;
-                                values[(byte)Math.Round((byte)(data[pos2 + 2] / preAlpha) * lumR + (byte)(data[pos2 + 1] / preAlpha) * lumG + (byte)(data[pos2] / preAlpha) * lumB)]++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (y = dab.StartY; y < endY; y++)
-                        {
-                            pos1 = stride * y;
-                            for (x = dab.StartX; x < endX; x++)
-                            {
-                                pos2 = pos1 + x * pixelBytes;
-                                values[(byte)Math.Round(data[pos2 + 2] * lumR + data[pos2 + 1] * lumG + data[pos2] * lumB)]++;
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                int chanOffset = 0;
-                if (channel == Channel.Alpha) chanOffset = 3;
-                else if (channel == Channel.Red) chanOffset = 2;
-                else if (channel == Channel.Green) chanOffset = 1;
-                else if (channel == Channel.Blue) chanOffset = 0;
-                else return ImageFilterError.InvalidArgument;
-
-                if (dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-                {
-                    float preAlpha;
-                    for (y = dab.StartY; y < endY; y++)
-                    {
-                        pos1 = stride * y;
-                        for (x = dab.StartX; x < endX; x++)
-                        {
-                            pos2 = pos1 + x * pixelBytes + chanOffset;
-                            preAlpha = (float)data[pos2 + 3];
-                            if (preAlpha > 0) preAlpha = preAlpha / 255f;
-                            values[(byte)(data[pos2] / preAlpha)]++;
-                        }
-                    }
-                }
-                else
-                {
-                    for (y = dab.StartY; y < endY; y++)
-                    {
-                        pos1 = stride * y;
-                        for (x = dab.StartX; x < endX; x++)
-                        {
-                            pos2 = pos1 + x * pixelBytes + chanOffset;
-                            values[data[pos2]]++;
-                        }
-                    }
-                }
-            }
-            return ImageFilterError.OK;
-        }
-        public static ImageFilterError CalculateHistogram(DirectAccessBitmap dab, out int[] valuesR, out int[] valuesG, out int[] valuesB)
-        {
-            valuesR = valuesG = valuesB = null;
-            if (dab == null) return ImageFilterError.InvalidArgument;
-            if (dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format24bppRgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppRgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppArgb &&
-                dab.Bitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-            {
-                return ImageFilterError.IncompatiblePixelFormat;
-            }
-
-            valuesR = new int[256];
-            valuesG = new int[256];
-            valuesB = new int[256];
-
-            int cx = dab.Width;
-            int cy = dab.Height;
-            int endX = cx + dab.StartX;
-            int endY = cy + dab.StartY;
-            int pixelBytes = dab.PixelFormatSize / 8;
-            int endXb = endX * pixelBytes;
-            byte[] data = dab.Bits;
-            int stride = dab.Stride;
-            int pos1, pos2;
-            int x, y;
-
-            if (dab.Bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppPArgb)
-            {
-                float preAlpha;
-                for (y = dab.StartY; y < endY; y++)
-                {
-                    pos1 = stride * y;
-                    for (x = dab.StartX; x < endX; x++)
-                    {
-                        pos2 = pos1 + x * pixelBytes;
-                        preAlpha = (float)data[pos2 + 3];
-                        if (preAlpha > 0) preAlpha = preAlpha / 255f;
-                        valuesR[(byte)(data[pos2 + 2] / preAlpha)]++;
-                        valuesG[(byte)(data[pos2 + 1] / preAlpha)]++;
-                        valuesB[(byte)(data[pos2] / preAlpha)]++;
-                    }
-                }
-            }
-            else
-            {
-                for (y = dab.StartY; y < endY; y++)
-                {
-                    pos1 = stride * y;
-                    for (x = dab.StartX; x < endX; x++)
-                    {
-                        pos2 = pos1 + x * pixelBytes;
-                        valuesR[data[pos2 + 2]]++;
-                        valuesG[data[pos2 + 2]]++;
-                        valuesB[data[pos2]]++;
-                    }
-                }
-            }
-            return ImageFilterError.OK;
         }
 
         #region CalculateBox
@@ -384,7 +150,7 @@ namespace dg.Utilities.Imaging
         {
             if (pathToImage == null) return Size.Empty;
 
-            return ImageDimensionsParser.GetImageSize(pathToImage);
+            return ImageDimensionsDecoder.GetImageSize(pathToImage);
         }
 
         public static void ApplyExifOrientation(Image image, bool removeExifOrientationTag)
@@ -432,14 +198,19 @@ namespace dg.Utilities.Imaging
             catch { }
         }
 
-        private static Color FixTransparentBgColor(Color Color, ImageFormat DestinationFormat)
+        private static Color FixTransparentBgColor(Color color, ImageFormat destinationFormat)
         {
-            if (DestinationFormat.Equals(ImageFormat.Png) ||
-                DestinationFormat.Equals(ImageFormat.Gif) ||
-                DestinationFormat.Equals(ImageFormat.Icon))
-                return Color; // Supports transparency
-            if (Color == Color.Transparent || Color == Color.Empty) Color = Color.White; // Avoid black backgrounds
-            return Color;
+            if (destinationFormat.Equals(ImageFormat.Png) ||
+                destinationFormat.Equals(ImageFormat.Gif) ||
+                destinationFormat.Equals(ImageFormat.Icon))
+                return color; // Supports transparency
+
+            if (color == Color.Transparent || color == Color.Empty)
+            {
+                color = Color.White; // Avoid black backgrounds
+            }
+
+            return color;
         }
 
         public static void FillRoundRectangle(Graphics destinationGraphics, Rectangle destinationRect,
@@ -530,111 +301,111 @@ namespace dg.Utilities.Imaging
         }
 
         public static Boolean ProcessImage(
-            String SourcePath, 
-            String DestinationPath/*=null*/,
-            ImageFormat DestinationFormat/*=null*/,
-            Color BackgroundColor,
-            Int32 BoundsX,
-            Int32 BoundsY,
-            Boolean MaintainAspectRatio/*=true*/,
-            Boolean ShrinkToFit/*=true*/,
-            Boolean EnlargeToFit/*=false*/,
-            Boolean FitFromOutside/*=false*/,
-            Boolean FixedFinalSize/*=false*/,
-            Double ZoomFactor/*0.0d*/,
-            CropAnchor CropAnchor/*=CropAnchor.NoCrop*/,
-            Corner RoundedCorners,
-            Int32 CornerRadius,
-            Color BorderColor,
-            float BorderWidth)
+            String sourcePath, 
+            String destinationPath/*=null*/,
+            ImageFormat destinationFormat/*=null*/,
+            Color backgroundColor,
+            Int32 boundsX,
+            Int32 boundsY,
+            Boolean maintainAspectRatio/*=true*/,
+            Boolean shrinkToFit/*=true*/,
+            Boolean enlargeToFit/*=false*/,
+            Boolean fitFromOutside/*=false*/,
+            Boolean fixedFinalSize/*=false*/,
+            Double zoomFactor/*0.0d*/,
+            CropAnchor cropAnchor/*=CropAnchor.NoCrop*/,
+            Corner roundedCorners,
+            Int32 cornerRadius,
+            Color borderColor,
+            float borderWidth)
         {
             bool retValue = false;
 
-            if (DestinationPath == null) DestinationPath = SourcePath;
-            if (BackgroundColor == null || BackgroundColor == Color.Empty) BackgroundColor = Color.Transparent;
-            if (BorderColor == null || BorderColor == Color.Empty) BorderColor = Color.Transparent;
+            if (destinationPath == null) destinationPath = sourcePath;
+            if (backgroundColor == null || backgroundColor == Color.Empty) backgroundColor = Color.Transparent;
+            if (borderColor == null || borderColor == Color.Empty) borderColor = Color.Transparent;
 
             bool processBorderAndCorners =
-                (BorderWidth > 0 && BorderColor != Color.Transparent)
-                || (CornerRadius > 0 && RoundedCorners != Corner.None);
+                (borderWidth > 0 && borderColor != Color.Transparent)
+                || (cornerRadius > 0 && roundedCorners != Corner.None);
 
             try
             {
-                if ((BoundsX <= 0 || BoundsY <= 0) && !FixedFinalSize)
+                if ((boundsX <= 0 || boundsY <= 0) && !fixedFinalSize)
                 {
-                    Size sz = GetImageSize(SourcePath);
-                    if (BoundsX <= 0) BoundsX = sz.Width;
-                    if (BoundsY <= 0) BoundsY = sz.Height;
+                    Size sz = GetImageSize(sourcePath);
+                    if (boundsX <= 0) boundsX = sz.Width;
+                    if (boundsY <= 0) boundsY = sz.Height;
                 }
-                using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(SourcePath))
+                using (System.Drawing.Image imgOriginal = System.Drawing.Image.FromFile(sourcePath))
                 {
                     ApplyExifOrientation(imgOriginal, true);
 
-                    if (DestinationFormat == null) DestinationFormat = imgOriginal.RawFormat;
+                    if (destinationFormat == null) destinationFormat = imgOriginal.RawFormat;
 
-                    BackgroundColor = FixTransparentBgColor(BackgroundColor, DestinationFormat);
+                    backgroundColor = FixTransparentBgColor(backgroundColor, destinationFormat);
 
                     Size szResizedImage = Size.Empty;
 
-                    if (!MaintainAspectRatio)
+                    if (!maintainAspectRatio)
                     {
-                        if (FixedFinalSize)
+                        if (fixedFinalSize)
                         {
-                            if (BoundsX <= 0 || BoundsY <= 0)
+                            if (boundsX <= 0 || boundsY <= 0)
                             {
                                 szResizedImage = CalculateBox(
                                     imgOriginal.Width, imgOriginal.Height,
-                                    BoundsX, BoundsY, FitFromOutside, EnlargeToFit, ShrinkToFit);
-                                if (BoundsX <= 0) BoundsX = szResizedImage.Width;
-                                if (BoundsY <= 0) BoundsY = szResizedImage.Height;
+                                    boundsX, boundsY, fitFromOutside, enlargeToFit, shrinkToFit);
+                                if (boundsX <= 0) boundsX = szResizedImage.Width;
+                                if (boundsY <= 0) boundsY = szResizedImage.Height;
                             }
                         }
-                        szResizedImage.Width = BoundsX;
-                        szResizedImage.Height = BoundsY;
+                        szResizedImage.Width = boundsX;
+                        szResizedImage.Height = boundsY;
                     } 
                     else
                     {
                         szResizedImage = CalculateBox(
                             imgOriginal.Width, imgOriginal.Height,
-                            BoundsX, BoundsY, FitFromOutside, EnlargeToFit, ShrinkToFit);
-                        if (FixedFinalSize)
+                            boundsX, boundsY, fitFromOutside, enlargeToFit, shrinkToFit);
+                        if (fixedFinalSize)
                         {
-                            if (BoundsX <= 0) BoundsX = szResizedImage.Width;
-                            if (BoundsY <= 0) BoundsY = szResizedImage.Height;
+                            if (boundsX <= 0) boundsX = szResizedImage.Width;
+                            if (boundsY <= 0) boundsY = szResizedImage.Height;
                         }
                     }
-                    if (ZoomFactor != 0.0d && ZoomFactor != 1.0d)
+                    if (zoomFactor != 0.0d && zoomFactor != 1.0d)
                     {
-                        szResizedImage.Width = (int)Math.Round((double)szResizedImage.Width * ZoomFactor);
-                        szResizedImage.Height = (int)Math.Round((double)szResizedImage.Height * ZoomFactor);
+                        szResizedImage.Width = (int)Math.Round((double)szResizedImage.Width * zoomFactor);
+                        szResizedImage.Height = (int)Math.Round((double)szResizedImage.Height * zoomFactor);
                     }
 
                     Size finalSize = Size.Empty;
-                    if (FixedFinalSize) 
+                    if (fixedFinalSize) 
                     {
-                        finalSize.Width = BoundsX;
-                        finalSize.Height = BoundsY;
+                        finalSize.Width = boundsX;
+                        finalSize.Height = boundsY;
                     }
                     else 
                     {
-                        finalSize.Width = szResizedImage.Width > BoundsX ? BoundsX : szResizedImage.Width;
-                        finalSize.Height = szResizedImage.Height > BoundsY ? BoundsY : szResizedImage.Height;
+                        finalSize.Width = szResizedImage.Width > boundsX ? boundsX : szResizedImage.Width;
+                        finalSize.Height = szResizedImage.Height > boundsY ? boundsY : szResizedImage.Height;
                     }
 
                     int xDrawPos = 0, yDrawPos = 0; // Default CropAnchor.None || CropAnchor.TopLeft
-                    if ((CropAnchor & CropAnchor.Top) == CropAnchor.Top) yDrawPos = 0;
-                    else if ((CropAnchor & CropAnchor.Bottom) == CropAnchor.Bottom) yDrawPos = -(szResizedImage.Height - finalSize.Height);
-                    else if ((CropAnchor & CropAnchor.Center) == CropAnchor.Center) yDrawPos = -((szResizedImage.Height - finalSize.Height) / 2);
-                    if ((CropAnchor & CropAnchor.Left) == CropAnchor.Left) xDrawPos = 0;
-                    else if ((CropAnchor & CropAnchor.Right) == CropAnchor.Right) xDrawPos = -(szResizedImage.Width - finalSize.Width);
-                    else if ((CropAnchor & CropAnchor.Center) == CropAnchor.Center) xDrawPos = -((szResizedImage.Width - finalSize.Width) / 2);
+                    if ((cropAnchor & CropAnchor.Top) == CropAnchor.Top) yDrawPos = 0;
+                    else if ((cropAnchor & CropAnchor.Bottom) == CropAnchor.Bottom) yDrawPos = -(szResizedImage.Height - finalSize.Height);
+                    else if ((cropAnchor & CropAnchor.Center) == CropAnchor.Center) yDrawPos = -((szResizedImage.Height - finalSize.Height) / 2);
+                    if ((cropAnchor & CropAnchor.Left) == CropAnchor.Left) xDrawPos = 0;
+                    else if ((cropAnchor & CropAnchor.Right) == CropAnchor.Right) xDrawPos = -(szResizedImage.Width - finalSize.Width);
+                    else if ((cropAnchor & CropAnchor.Center) == CropAnchor.Center) xDrawPos = -((szResizedImage.Width - finalSize.Width) / 2);
 
                     if (finalSize.Width == szResizedImage.Width) xDrawPos = 0; // Avoid 1px offset problems
                     if (finalSize.Height == szResizedImage.Height) yDrawPos = 0; // Avoid 1px offset problems
 
                     string tempFilePath = Files.CreateEmptyTempFile();
 
-                    retValue = ProcessImageToFile(imgOriginal, tempFilePath ?? DestinationPath, DestinationFormat, 100L, delegate(Image frame)
+                    retValue = ProcessImageFramesToFile(imgOriginal, tempFilePath ?? destinationPath, destinationFormat, 1.0f, delegate(Image frame)
                     {
                         System.Drawing.Image imgProcessed = null, imgProcessBorder = null;
                         try
@@ -648,8 +419,8 @@ namespace dg.Utilities.Imaging
                                 gProcessed.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
 
                                 // Fill background if we are not intending to do that later on
-                                if (!processBorderAndCorners) gProcessed.Clear(BackgroundColor);
-                                else gProcessed.Clear(FixTransparentBgColor(Color.Transparent, DestinationFormat));
+                                if (!processBorderAndCorners) gProcessed.Clear(backgroundColor);
+                                else gProcessed.Clear(FixTransparentBgColor(Color.Transparent, destinationFormat));
 
                                 // Draw the final image in the correct position inside the final box
                                 gProcessed.DrawImage(frame, xDrawPos, yDrawPos, szResizedImage.Width, szResizedImage.Height);
@@ -663,22 +434,22 @@ namespace dg.Utilities.Imaging
                                         gProcessBorder.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
                                         gProcessBorder.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
                                         gProcessBorder.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                                        gProcessBorder.Clear(BackgroundColor);
+                                        gProcessBorder.Clear(backgroundColor);
                                         using (System.Drawing.Brush brush = new System.Drawing.TextureBrush(imgProcessed))
                                         {
-                                            using (System.Drawing.Pen pen = new System.Drawing.Pen(BorderColor, BorderWidth))
+                                            using (System.Drawing.Pen pen = new System.Drawing.Pen(borderColor, borderWidth))
                                             {
-                                                Int32 halfBorderWidth = (Int32)(BorderWidth / 2.0f + 0.5f);
+                                                Int32 halfBorderWidth = (Int32)(borderWidth / 2.0f + 0.5f);
                                                 FillRoundRectangle(gProcessBorder,
                                                     new System.Drawing.Rectangle(
                                                         halfBorderWidth,
                                                         halfBorderWidth,
                                                         finalSize.Width - halfBorderWidth - halfBorderWidth,
                                                         finalSize.Height - halfBorderWidth - halfBorderWidth),
-                                                        (RoundedCorners & Corner.TopLeft) == 0 ? 0 : CornerRadius,
-                                                        (RoundedCorners & Corner.TopRight) == 0 ? 0 : CornerRadius,
-                                                        (RoundedCorners & Corner.BottomRight) == 0 ? 0 : CornerRadius,
-                                                        (RoundedCorners & Corner.BottomLeft) == 0 ? 0 : CornerRadius, 
+                                                        (roundedCorners & Corner.TopLeft) == 0 ? 0 : cornerRadius,
+                                                        (roundedCorners & Corner.TopRight) == 0 ? 0 : cornerRadius,
+                                                        (roundedCorners & Corner.BottomRight) == 0 ? 0 : cornerRadius,
+                                                        (roundedCorners & Corner.BottomLeft) == 0 ? 0 : cornerRadius, 
                                                         brush, pen);
                                             }
                                         }
@@ -706,9 +477,9 @@ namespace dg.Utilities.Imaging
                     {
                         using (Files.TemporaryFileDeleter temporaryFileDeleter = new Files.TemporaryFileDeleter(tempFilePath))
                         {
-                            if (System.IO.File.Exists(DestinationPath)) System.IO.File.Delete(DestinationPath);
-                            System.IO.File.Move(tempFilePath, DestinationPath);
-                            Files.ResetFilePermissionsToInherited(DestinationPath);
+                            if (System.IO.File.Exists(destinationPath)) System.IO.File.Delete(destinationPath);
+                            System.IO.File.Move(tempFilePath, destinationPath);
+                            Files.ResetFilePermissionsToInherited(destinationPath);
                             temporaryFileDeleter.DoNotDelete();
                         }
                     }
@@ -719,25 +490,32 @@ namespace dg.Utilities.Imaging
             return retValue;
         }
 
+        #region Saving
+
         /// <summary>
         /// Saves an Image object to the specified local path
         /// In case of a GIF format chosen, it will use a Quantizer and save with high quality
-        /// In case of a JPEG format, it will save with 100% quality
         /// 
         /// This may throw any Exception that an Image.Save(...) may throw
         /// </summary>
         /// <param name="imageData">Image object to save</param>
-        /// <param name="imgPath">Destination local path</param>
-        /// <param name="imgFormat">Image format to use</param>
-        public static void SaveImage(Image imageData, string imgPath, ImageFormat imgFormat)
+        /// <param name="imagePath">Destination local path</param>
+        /// <param name="imageFormat">Image format to use</param>
+        /// <param name="jpegQuality">Quality to use in case of a jpeg format (0.0 - 1.0)</param>
+        public static void SaveImage(Image imageData, string imagePath, ImageFormat imageFormat, float jpegQuality)
         {
-            if (imgFormat.Equals(ImageFormat.Jpeg))
+            if (imageFormat.Equals(ImageFormat.Jpeg))
             {
                 System.Drawing.Imaging.ImageCodecInfo encoder = null;
                 System.Drawing.Imaging.ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();
                 using (EncoderParameters encoderParameters = new EncoderParameters(1))
                 {
-                    encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, 100L);
+                    if (jpegQuality < 0.0f || jpegQuality > 1.0f)
+                    {
+                        jpegQuality = 1.0f;
+                    }
+
+                    encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, Math.Max(Math.Min((long)Math.Round(jpegQuality * 100), 100L), 0L));
                     foreach (System.Drawing.Imaging.ImageCodecInfo item in encoders)
                     {
                         if (item.MimeType == @"image/jpeg")
@@ -747,23 +525,40 @@ namespace dg.Utilities.Imaging
                         }
                     }
 
-                    if (encoder != null) imageData.Save(imgPath, encoder, encoderParameters);
-                    else imageData.Save(imgPath, imgFormat);
+                    if (encoder != null) imageData.Save(imagePath, encoder, encoderParameters);
+                    else imageData.Save(imagePath, imageFormat);
                 }
             }
-            else if (imgFormat.Equals(ImageFormat.Gif))
+            else if (imageFormat.Equals(ImageFormat.Gif))
             {
                 WuColorQuantizer quantizer = new WuColorQuantizer();
                 using (Image quantized = ImageBuffer.QuantizeImage(imageData, quantizer, 255, 4))
                 {
-                    quantized.Save(imgPath, ImageFormat.Gif);
+                    quantized.Save(imagePath, ImageFormat.Gif);
                 }
             }
             else
             {
-                imageData.Save(imgPath, imgFormat);
+                imageData.Save(imagePath, imageFormat);
             }
         }
+
+        /// <summary>
+        /// Saves an Image object to the specified local path
+        /// In case of a GIF format chosen, it will use a Quantizer and save with high quality
+        /// In case of a JPEG format, it will default to 1.0 (100%) quality
+        /// 
+        /// This may throw any Exception that an Image.Save(...) may throw
+        /// </summary>
+        /// <param name="imageData">Image object to save</param>
+        /// <param name="imagePath">Destination local path</param>
+        /// <param name="imageFormat">Image format to use</param>
+        public static void SaveImage(Image imageData, string imagePath, ImageFormat imageFormat)
+        {
+            SaveImage(imageData, imagePath, imageFormat, 1.0f);
+        }
+
+        #endregion
 
         public static bool SetImageRoundBorder(
             String sourcePath, 
@@ -781,7 +576,7 @@ namespace dg.Utilities.Imaging
 
                 string tempFilePath = Files.CreateEmptyTempFile();
 
-                bool retValue = ProcessImageToFile(imgOriginal, destinationPath, destinationFormat, 100L, delegate(Image frame)
+                bool retValue = ProcessImageFramesToFile(imgOriginal, destinationPath, destinationFormat, 1.0f, delegate(Image frame)
                 {
                     System.Drawing.Image imgProcessed = null;
                     try
@@ -844,46 +639,51 @@ namespace dg.Utilities.Imaging
         }
         
         public delegate Image ProcessImageFrameDelegate(Image frame);
-
+        
         /// <summary>
         /// Will trigger a function for processing each frame in image (will handle GIFs as well), and save the result to the destination file.
         /// </summary>
-        /// <param name="SourceImageData">Source image</param>
-        /// <param name="DestinationPath">Destination path</param>
-        /// <param name="DestinationFormat">Destination file format. null for original</param>
-        /// <param name="JpegQuality">1-100. Any out of range value will default to 100. 0 will mean 100.</param>
-        /// <param name="Processor">A processing function that will be executed for each frame.</param>
+        /// <param name="sourceImageData">Source image</param>
+        /// <param name="destinationPath">Destination path</param>
+        /// <param name="destinationFormat">Destination file format. null for original</param>
+        /// <param name="jpegQuality">0.0 - 1.0 Any out of range value will default to 1.0. 0 will mean 0.0.</param>
+        /// <param name="processor">A processing function that will be executed for each frame.</param>
         /// <returns>true if successful, false if there was any failure.</returns>
-        public static bool ProcessImageToFile(Image SourceImageData, String DestinationPath, ImageFormat DestinationFormat, long JpegQuality, ProcessImageFrameDelegate Processor)
+        public static bool ProcessImageFramesToFile(
+            Image sourceImageData, 
+            String destinationPath, 
+            ImageFormat destinationFormat, 
+            float jpegQuality, 
+            ProcessImageFrameDelegate processor)
         {
-            if (DestinationFormat == null) DestinationFormat = SourceImageData.RawFormat;
+            if (destinationFormat == null) destinationFormat = sourceImageData.RawFormat;
 
-            if (SourceImageData.RawFormat.Equals(ImageFormat.Gif) && DestinationFormat.Equals(ImageFormat.Gif))
+            if (sourceImageData.RawFormat.Equals(ImageFormat.Gif) && destinationFormat.Equals(ImageFormat.Gif))
             {
-                int frameCount = SourceImageData.GetFrameCount(FrameDimension.Time);
-                byte[] durationBytes = SourceImageData.GetPropertyItem((int)ExifPropertyTag.PropertyTagFrameDelay).Value;
-                Int16 loopCount = BitConverter.ToInt16(SourceImageData.GetPropertyItem((int)ExifPropertyTag.PropertyTagLoopCount).Value, 0);
+                int frameCount = sourceImageData.GetFrameCount(FrameDimension.Time);
+                byte[] durationBytes = sourceImageData.GetPropertyItem((int)ExifPropertyTag.PropertyTagFrameDelay).Value;
+                Int16 loopCount = BitConverter.ToInt16(sourceImageData.GetPropertyItem((int)ExifPropertyTag.PropertyTagLoopCount).Value, 0);
 
                 GifEncoder gifEncoder = new GifEncoder();
                 try
                 {
-                    gifEncoder.Start(DestinationPath);
+                    gifEncoder.Start(destinationPath);
                 }
                 catch (System.Exception ex)
                 {
-                    Console.WriteLine(@"ImagingUtility.ProcessImageToFile - Error: {0}", ex.ToString());
+                    Console.WriteLine(@"ImagingUtility.ProcessImageFramesToFile - Error: {0}", ex.ToString());
                     return false;
                 }
-                gifEncoder.SetSize(SourceImageData.Width, SourceImageData.Height);
+                gifEncoder.SetSize(sourceImageData.Width, sourceImageData.Height);
                 gifEncoder.SetRepeat(loopCount);
 
                 WuColorQuantizer quantizer = new WuColorQuantizer();
-                byte[] pallette = SourceImageData.GetPropertyItem((int)dg.Utilities.Imaging.ExifPropertyTag.PropertyTagGlobalPalette).Value;
+                byte[] pallette = sourceImageData.GetPropertyItem((int)dg.Utilities.Imaging.ExifPropertyTag.PropertyTagGlobalPalette).Value;
                 int transparentColorIndex = -1;
                 Color transparentColor = Color.Empty;
                 try
                 {
-                    transparentColorIndex = SourceImageData.GetPropertyItem((int)dg.Utilities.Imaging.ExifPropertyTag.PropertyTagIndexTransparent).Value[0];
+                    transparentColorIndex = sourceImageData.GetPropertyItem((int)dg.Utilities.Imaging.ExifPropertyTag.PropertyTagIndexTransparent).Value[0];
                     transparentColor = Color.FromArgb(pallette[transparentColorIndex * 3], pallette[transparentColorIndex * 3 + 1], pallette[transparentColorIndex * 3 + 2]);
                 }
                 catch { }
@@ -893,11 +693,11 @@ namespace dg.Utilities.Imaging
                     try
                     {
                         duration = BitConverter.ToInt32(durationBytes, 4 * frame); // In hundredth of a second
-                        SourceImageData.SelectActiveFrame(FrameDimension.Time, frame);
+                        sourceImageData.SelectActiveFrame(FrameDimension.Time, frame);
 
-                        if (Processor != null)
+                        if (processor != null)
                         {
-                            using (Image output = Processor(SourceImageData))
+                            using (Image output = processor(sourceImageData))
                             {
                                 if (output != null)
                                 {
@@ -916,7 +716,7 @@ namespace dg.Utilities.Imaging
                         }
                         else
                         {
-                            using (Image quantized = ImageBuffer.QuantizeImage(SourceImageData, quantizer, 255, 4))
+                            using (Image quantized = ImageBuffer.QuantizeImage(sourceImageData, quantizer, 255, 4))
                             {
                                 gifEncoder.SetNextFrameDuration(duration * 10);
                                 gifEncoder.SetNextFrameTransparentColor(transparentColor);
@@ -926,7 +726,7 @@ namespace dg.Utilities.Imaging
                     }
                     catch (System.Exception ex)
                     {
-                        Console.WriteLine(@"ImagingUtility.ProcessImageToFile - Error: {0}", ex.ToString());
+                        Console.WriteLine(@"ImagingUtility.ProcessImageFramesToFile - Error: {0}", ex.ToString());
                     }
                 }
 
@@ -936,26 +736,30 @@ namespace dg.Utilities.Imaging
                 }
                 catch (System.Exception ex)
                 {
-                    Console.WriteLine(@"ImagingUtility.ProcessImageToFile - Error: {0}", ex.ToString());
+                    Console.WriteLine(@"ImagingUtility.ProcessImageFramesToFile - Error: {0}", ex.ToString());
                     return false;
                 }
             }
             else
             {
-                if (Processor != null)
+                if (processor != null)
                 {
-                    using (Image output = Processor(SourceImageData))
+                    using (Image output = processor(sourceImageData))
                     {
                         if (output != null)
                         {
-                            if (DestinationFormat.Equals(ImageFormat.Jpeg))
+                            if (destinationFormat.Equals(ImageFormat.Jpeg))
                             {
                                 System.Drawing.Imaging.ImageCodecInfo encoder = null;
                                 System.Drawing.Imaging.ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();
                                 using (EncoderParameters encoderParameters = new EncoderParameters(1))
                                 {
-                                    if (JpegQuality == 0L || JpegQuality > 100L) JpegQuality = 100L;
-                                    encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, JpegQuality);
+                                    if (jpegQuality < 0.0f || jpegQuality > 1.0f)
+                                    {
+                                        jpegQuality = 1.0f;
+                                    }
+
+                                    encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, Math.Max(Math.Min((long)Math.Round(jpegQuality * 100), 100L), 0L));
                                     foreach (System.Drawing.Imaging.ImageCodecInfo item in encoders)
                                     {
                                         if (item.MimeType == @"image/jpeg")
@@ -965,21 +769,21 @@ namespace dg.Utilities.Imaging
                                         }
                                     }
 
-                                    if (encoder != null) output.Save(DestinationPath, encoder, encoderParameters);
-                                    else output.Save(DestinationPath, DestinationFormat);
+                                    if (encoder != null) output.Save(destinationPath, encoder, encoderParameters);
+                                    else output.Save(destinationPath, destinationFormat);
                                 }
                             }
-                            else if (DestinationFormat.Equals(ImageFormat.Gif))
+                            else if (destinationFormat.Equals(ImageFormat.Gif))
                             {
                                 WuColorQuantizer quantizer = new WuColorQuantizer();
                                 using (Image quantized = ImageBuffer.QuantizeImage(output, quantizer, 255, 4))
                                 {
-                                    quantized.Save(DestinationPath, ImageFormat.Gif);
+                                    quantized.Save(destinationPath, ImageFormat.Gif);
                                 }
                             }
                             else
                             {
-                                output.Save(DestinationPath, DestinationFormat);
+                                output.Save(destinationPath, destinationFormat);
                             }
                         }
                         else
@@ -990,14 +794,18 @@ namespace dg.Utilities.Imaging
                 }
                 else
                 {
-                    if (DestinationFormat.Equals(ImageFormat.Jpeg))
+                    if (destinationFormat.Equals(ImageFormat.Jpeg))
                     {
                         System.Drawing.Imaging.ImageCodecInfo encoder = null;
                         System.Drawing.Imaging.ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();
                         using (EncoderParameters encoderParameters = new EncoderParameters(1))
                         {
-                            if (JpegQuality == 0L || JpegQuality > 100L) JpegQuality = 100L;
-                            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, JpegQuality);
+                            if (jpegQuality < 0.0f || jpegQuality > 1.0f)
+                            {
+                                jpegQuality = 1.0f;
+                            }
+
+                            encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, Math.Max(Math.Min((long)Math.Round(jpegQuality * 100), 100L), 0L));
                             foreach (System.Drawing.Imaging.ImageCodecInfo item in encoders)
                             {
                                 if (item.MimeType == @"image/jpeg")
@@ -1007,21 +815,21 @@ namespace dg.Utilities.Imaging
                                 }
                             }
 
-                            if (encoder != null) SourceImageData.Save(DestinationPath, encoder, encoderParameters);
-                            else SourceImageData.Save(DestinationPath, DestinationFormat);
+                            if (encoder != null) sourceImageData.Save(destinationPath, encoder, encoderParameters);
+                            else sourceImageData.Save(destinationPath, destinationFormat);
                         }
                     }
-                    else if (DestinationFormat.Equals(ImageFormat.Gif))
+                    else if (destinationFormat.Equals(ImageFormat.Gif))
                     {
                         WuColorQuantizer quantizer = new WuColorQuantizer();
-                        using (Image quantized = ImageBuffer.QuantizeImage(SourceImageData, quantizer, 255, 4))
+                        using (Image quantized = ImageBuffer.QuantizeImage(sourceImageData, quantizer, 255, 4))
                         {
-                            quantized.Save(DestinationPath, ImageFormat.Gif);
+                            quantized.Save(destinationPath, ImageFormat.Gif);
                         }
                     }
                     else
                     {
-                        SourceImageData.Save(DestinationPath, DestinationFormat);
+                        sourceImageData.Save(destinationPath, destinationFormat);
                     }
                 }
             }

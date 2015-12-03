@@ -36,35 +36,4 @@ namespace dg.Utilities.Imaging
         BottomLeft = 0x08,
         AllCorners = TopLeft | TopRight | BottomRight | BottomLeft
     }
-
-    public enum ImageFilterError
-    {
-        None = 0,
-        OK = 0,
-        UnknownError = 1,
-        IncompatiblePixelFormat = 2,
-        InvalidArgument = 3,
-        MissingArgument = 4
-    }
-
-    [Flags]
-    public enum Channel
-    {
-        None = 0,
-        Alpha = 1,
-        Red = 2,
-        Green = 4,
-        Blue = 8,
-        Gray = 16,
-        RGB = Red | Green | Blue,
-        ARGB = Alpha | RGB
-    }
-
-    public enum GrayMultiplier
-    {
-        None = 0,
-        Accurate = None,
-        Natural = 1,
-        NaturalNTSC = 2
-    }
 }

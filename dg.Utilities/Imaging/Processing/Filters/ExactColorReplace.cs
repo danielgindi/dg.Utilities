@@ -4,7 +4,7 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class ExactColorReplace : IImageFilter
     {
@@ -34,7 +34,7 @@ namespace dg.Utilities.Imaging.Filters
             public DestColor(Color color) :
                 base(color) { }
         }
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -52,19 +52,19 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, clrSource, clrDest);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, clrSource, clrDest);
+                    return ProcessImage32rgba(bmp, clrSource, clrDest);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, clrSource, clrDest);
+                    return ProcessImage32prgba(bmp, clrSource, clrDest);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
         {
             if (clrSource == null || clrDest == null)
-                return ImageFilterError.MissingArgument;
+                return FilterError.MissingArgument;
             if (clrSource.Is64Bit || clrDest.Is64Bit)
-                return ImageFilterError.InvalidArgument;
+                return FilterError.InvalidArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -90,14 +90,14 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
         {
             if (clrSource == null || clrDest == null)
-                return ImageFilterError.MissingArgument;
+                return FilterError.MissingArgument;
             if (clrSource.Is64Bit || clrDest.Is64Bit)
-                return ImageFilterError.InvalidArgument;
+                return FilterError.InvalidArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -123,14 +123,14 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
         {
             if (clrSource == null || clrDest == null)
-                return ImageFilterError.MissingArgument;
+                return FilterError.MissingArgument;
             if (clrSource.Is64Bit || clrDest.Is64Bit)
-                return ImageFilterError.InvalidArgument;
+                return FilterError.InvalidArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -158,14 +158,14 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, SourceColor clrSource, DestColor clrDest)
         {
             if (clrSource == null || clrDest == null)
-                return ImageFilterError.MissingArgument;
+                return FilterError.MissingArgument;
             if (clrSource.Is64Bit || clrDest.Is64Bit)
-                return ImageFilterError.InvalidArgument;
+                return FilterError.InvalidArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -196,7 +196,7 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

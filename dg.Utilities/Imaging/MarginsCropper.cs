@@ -19,7 +19,7 @@ namespace dg.Utilities.Imaging
         /// <returns>Image after cropping, or null if there's no work to do.
         /// If result is zero width or zero height, returns null
         /// </returns>
-        public static Image SlowSafeTrace(Bitmap image, Color color, double colorDistanceAllowed)
+        public static Image CropMargins(Bitmap image, Color color, double colorDistanceAllowed)
         {
             if (image == null) return null;
             if (color == null || color == System.Drawing.Color.Empty) color = image.GetPixel(0, 0);
@@ -38,7 +38,7 @@ namespace dg.Utilities.Imaging
                 {
                     if (image.GetPixel(x, y) != color &&
                         (!bCheckDistance ||
-                            getColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
+                            GetColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
                         )
                     {
                         bGoOn = false; 
@@ -59,7 +59,7 @@ namespace dg.Utilities.Imaging
                 {
                     if (image.GetPixel(x, y) != color &&
                         (!bCheckDistance ||
-                            getColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
+                            GetColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
                         ) 
                     { 
                         bGoOn = false; 
@@ -80,7 +80,7 @@ namespace dg.Utilities.Imaging
                 {
                     if (image.GetPixel(x, y) != color &&
                         (!bCheckDistance ||
-                            getColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
+                            GetColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
                         )
                     {
                         bGoOn = false; 
@@ -101,7 +101,7 @@ namespace dg.Utilities.Imaging
                 {
                     if (image.GetPixel(x, y) != color &&
                         (!bCheckDistance ||
-                            getColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
+                            GetColorDistance(image.GetPixel(x, y), color) > colorDistanceAllowed)
                         )
                     { 
                         bGoOn = false;
@@ -137,7 +137,7 @@ namespace dg.Utilities.Imaging
             return retImg;
         }
 
-        public static Boolean cropMargins_SafeMethod(String imgPath, String destPath, Color colorCrop, double colorDistanceAllowed)
+        public static Boolean CropMarginsAndSave(String imgPath, String destPath, Color colorCrop, double colorDistanceAllowed)
         {
             if (imgPath == null) return false;
             if (destPath == null) destPath = imgPath;
@@ -150,7 +150,7 @@ namespace dg.Utilities.Imaging
                     Image destImg;
                     using (Bitmap srcBmp = new Bitmap(imgSrc))
                     {
-                        destImg = SlowSafeTrace(srcBmp, colorCrop, colorDistanceAllowed);
+                        destImg = CropMargins(srcBmp, colorCrop, colorDistanceAllowed);
                     }
                     imgSrc.Dispose();
 
@@ -214,7 +214,7 @@ namespace dg.Utilities.Imaging
             return true;
         }
 
-        public static double getColorDistance(Color c1, Color c2)
+        public static double GetColorDistance(Color c1, Color c2)
         {
             double a = Math.Pow(Convert.ToDouble(c1.A - c2.A), 2.0);
             double r = Math.Pow(Convert.ToDouble(c1.R - c2.R), 2.0);

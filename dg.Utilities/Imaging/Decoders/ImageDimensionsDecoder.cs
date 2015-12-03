@@ -11,9 +11,9 @@ using dg.Utilities.General_Utilities;
 //  Extended to handle ICNS files by David W. Stockton 4/23/14.
 //  Copyright (c) 2014 Syntonicity, LLC. All rights reserved.
 //  
-namespace dg.Utilities.Imaging
+namespace dg.Utilities.Imaging.Decoders
 {
-    public static class ImageDimensionsParser
+    public static class ImageDimensionsDecoder
     {
         static byte[] JPEG_HEADER = new byte[] { 0xff, 0xd8 };
         static byte[] JPEG_EXIF_HEADER = new byte[] { (byte)'E', (byte)'x', (byte)'i', (byte)'f' };

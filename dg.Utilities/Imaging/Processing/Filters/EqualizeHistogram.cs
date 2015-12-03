@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     /// <summary>
     /// This will equalize the histogram for an image.
@@ -49,22 +49,22 @@ namespace dg.Utilities.Imaging.Filters
 
         public class HistogramParam
         {
-            public Channel Channel;
+            public FilterColorChannel Channel;
             public int[] Histogram;
 
-            public HistogramParam(Channel channel, int[] histogram)
+            public HistogramParam(FilterColorChannel channel, int[] histogram)
             {
                 Channel = channel;
                 Histogram = histogram;
             }
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
-            Channel channels = Channel.None;
-            GrayMultiplier grayMultiplier = GrayMultiplier.None;
+            FilterColorChannel channels = FilterColorChannel.None;
+            FilterGrayScaleWeight grayMultiplier = FilterGrayScaleWeight.None;
             int[] histogramR = null;
             int[] histogramG = null;
             int[] histogramB = null;
@@ -75,84 +75,84 @@ namespace dg.Utilities.Imaging.Filters
                 {
                     switch (((HistogramParam)arg).Channel)
                     {
-                        case Channel.Red:
+                        case FilterColorChannel.Red:
                             histogramR = ((HistogramParam)arg).Histogram;
-                            if (histogramR != null) channels |= Channel.Red;
+                            if (histogramR != null) channels |= FilterColorChannel.Red;
                             break;
-                        case Channel.Green:
+                        case FilterColorChannel.Green:
                             histogramG = ((HistogramParam)arg).Histogram;
-                            if (histogramG != null) channels |= Channel.Green;
+                            if (histogramG != null) channels |= FilterColorChannel.Green;
                             break;
-                        case Channel.Blue:
+                        case FilterColorChannel.Blue:
                             histogramB = ((HistogramParam)arg).Histogram;
-                            if (histogramB != null) channels |= Channel.Blue;
+                            if (histogramB != null) channels |= FilterColorChannel.Blue;
                             break;
-                        case Channel.Gray:
+                        case FilterColorChannel.Gray:
                             histogramGrey = ((HistogramParam)arg).Histogram;
-                            if (histogramGrey != null) channels = Channel.Gray;
+                            if (histogramGrey != null) channels = FilterColorChannel.Gray;
                             break;
                     }
                 }
-                else if (arg is Channel)
+                else if (arg is FilterColorChannel)
                 {
-                    channels |= (Channel)arg;
+                    channels |= (FilterColorChannel)arg;
                 }
-                else if (arg is GrayMultiplier)
+                else if (arg is FilterGrayScaleWeight)
                 {
-                    grayMultiplier |= (GrayMultiplier)arg;
+                    grayMultiplier |= (FilterGrayScaleWeight)arg;
                 }
             }
 
             switch (bmp.Bitmap.PixelFormat)
             {
                 case PixelFormat.Format24bppRgb:
-                    if (channels == Channel.Gray) return ProcessImage24rgb(bmp, histogramGrey, grayMultiplier);
+                    if (channels == FilterColorChannel.Gray) return ProcessImage24rgb(bmp, histogramGrey, grayMultiplier);
                     else return ProcessImage24rgb(bmp, channels, histogramR, histogramG, histogramB);
                 case PixelFormat.Format32bppRgb:
-                    if (channels == Channel.Gray) return ProcessImage32rgb(bmp, histogramGrey, grayMultiplier);
+                    if (channels == FilterColorChannel.Gray) return ProcessImage32rgb(bmp, histogramGrey, grayMultiplier);
                     else return ProcessImage32rgb(bmp, channels, histogramR, histogramG, histogramB);
                 case PixelFormat.Format32bppArgb:
-                    if (channels == Channel.Gray) return ProcessImage32argb(bmp, histogramGrey, grayMultiplier);
-                    else return ProcessImage32argb(bmp, channels, histogramR, histogramG, histogramB);
+                    if (channels == FilterColorChannel.Gray) return ProcessImage32rgba(bmp, histogramGrey, grayMultiplier);
+                    else return ProcessImage32rgba(bmp, channels, histogramR, histogramG, histogramB);
                 case PixelFormat.Format32bppPArgb:
-                    if (channels == Channel.Gray) return ProcessImage32pargb(bmp, histogramGrey, grayMultiplier);
-                    else return ProcessImage32pargb(bmp, channels, histogramR, histogramG, histogramB);
+                    if (channels == FilterColorChannel.Gray) return ProcessImage32prgba(bmp, histogramGrey, grayMultiplier);
+                    else return ProcessImage32prgba(bmp, channels, histogramR, histogramG, histogramB);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
 
-        private ImageFilterError CalculateHistogramsIfNeeded(DirectAccessBitmap dab, Channel channels, ref int[] R, ref int[] G, ref int [] B)
+        private FilterError CalculateHistogramsIfNeeded(DirectAccessBitmap dab, FilterColorChannel channels, ref int[] R, ref int[] G, ref int [] B)
         {
-            Channel channelsToRetrieve = Channel.None;
-            if ((channels & Channel.Red) == Channel.Red && R == null)
-                channelsToRetrieve |= Channel.Red;
-            if ((channels & Channel.Green) == Channel.Green && G == null)
-                channelsToRetrieve |= Channel.Green;
-            if ((channels & Channel.Blue) == Channel.Blue && B == null)
-                channelsToRetrieve |= Channel.Blue;
-            if (channelsToRetrieve != Channel.None)
+            FilterColorChannel channelsToRetrieve = FilterColorChannel.None;
+            if ((channels & FilterColorChannel.Red) == FilterColorChannel.Red && R == null)
+                channelsToRetrieve |= FilterColorChannel.Red;
+            if ((channels & FilterColorChannel.Green) == FilterColorChannel.Green && G == null)
+                channelsToRetrieve |= FilterColorChannel.Green;
+            if ((channels & FilterColorChannel.Blue) == FilterColorChannel.Blue && B == null)
+                channelsToRetrieve |= FilterColorChannel.Blue;
+            if (channelsToRetrieve != FilterColorChannel.None)
             {
-                ImageFilterError err;
-                if (channelsToRetrieve == Channel.Red)
+                FilterError err;
+                if (channelsToRetrieve == FilterColorChannel.Red)
                 {
-                    err = ImagingUtility.CalculateHistogram(dab, Channel.Red, out R);
+                    err = HistogramHelper.CalculateHistogram(dab, FilterColorChannel.Red, out R);
                 }
-                else if (channelsToRetrieve == Channel.Green)
+                else if (channelsToRetrieve == FilterColorChannel.Green)
                 {
-                    err = ImagingUtility.CalculateHistogram(dab, Channel.Green, out G);
+                    err = HistogramHelper.CalculateHistogram(dab, FilterColorChannel.Green, out G);
                 }
-                else if (channelsToRetrieve == Channel.Blue)
+                else if (channelsToRetrieve == FilterColorChannel.Blue)
                 {
-                    err = ImagingUtility.CalculateHistogram(dab, Channel.Blue, out B);
+                    err = HistogramHelper.CalculateHistogram(dab, FilterColorChannel.Blue, out B);
                 }
                 else
                 {
-                    err = ImagingUtility.CalculateHistogram(dab, out R, out G, out B);
+                    err = HistogramHelper.CalculateHistogram(dab, out R, out G, out B);
                 }
-                if (err != ImageFilterError.OK) return err;
+                if (err != FilterError.OK) return err;
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
         private double[] CalculateCDF(int[] histogram, int numberOfPixels)
         {
@@ -197,11 +197,11 @@ namespace dg.Utilities.Imaging.Filters
             return lowest;
         }
 
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, Channel channels, int[] histR, int[] histG, int[] histB)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, FilterColorChannel channels, int[] histR, int[] histG, int[] histB)
         {
-            if (channels == Channel.None) channels = Channel.RGB;
-            ImageFilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
-            if (err != ImageFilterError.OK) return err;
+            if (channels == FilterColorChannel.None) channels = FilterColorChannel.RGB;
+            FilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
+            if (err != FilterError.OK) return err;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -265,13 +265,13 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, Channel channels, int[] histR, int[] histG, int[] histB)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, FilterColorChannel channels, int[] histR, int[] histG, int[] histB)
         {
-            if (channels == Channel.None) channels = Channel.RGB;
-            ImageFilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
-            if (err != ImageFilterError.OK) return err;
+            if (channels == FilterColorChannel.None) channels = FilterColorChannel.RGB;
+            FilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
+            if (err != FilterError.OK) return err;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -338,17 +338,17 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, Channel channels, int[] histR, int[] histG, int[] histB)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, FilterColorChannel channels, int[] histR, int[] histG, int[] histB)
         {
             return ProcessImage32rgb(bmp, channels, histR, histG, histB);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, Channel channels, int[] histR, int[] histG, int[] histB)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, FilterColorChannel channels, int[] histR, int[] histG, int[] histB)
         {
-            if (channels == Channel.None) channels = Channel.RGB;
-            ImageFilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
-            if (err != ImageFilterError.OK) return err;
+            if (channels == FilterColorChannel.None) channels = FilterColorChannel.RGB;
+            FilterError err = CalculateHistogramsIfNeeded(bmp, channels, ref histR, ref histG, ref histB);
+            if (err != FilterError.OK) return err;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -422,15 +422,15 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
 
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, int[] histGrey, GrayMultiplier grayMultiplier)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, int[] histGrey, FilterGrayScaleWeight grayMultiplier)
         {
             if (histGrey == null)
             {
-                ImageFilterError err = ImagingUtility.CalculateHistogram(bmp, Channel.Gray, out histGrey, grayMultiplier);
-                if (err != ImageFilterError.OK) return err;
+                FilterError err = HistogramHelper.CalculateHistogram(bmp, FilterColorChannel.Gray, out histGrey, grayMultiplier);
+                if (err != FilterError.OK) return err;
             }
 
             int cx = bmp.Width;
@@ -451,7 +451,7 @@ namespace dg.Utilities.Imaging.Filters
             double numberOfPixels2 = numberOfPixels - cdfmin;
             int value;
 
-            if (grayMultiplier == GrayMultiplier.None)
+            if (grayMultiplier == FilterGrayScaleWeight.None)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -471,17 +471,23 @@ namespace dg.Utilities.Imaging.Filters
             {
                 double lumR, lumG, lumB;
 
-                if (grayMultiplier == GrayMultiplier.NaturalNTSC)
+                if (grayMultiplier == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    lumR = ImagingUtility.RedLuminosityNTSC;
-                    lumG = ImagingUtility.GreenLuminosityNTSC;
-                    lumB = ImagingUtility.BlueLuminosityNTSC;
+                    lumR = GrayScaleMultiplier.NtscRed;
+                    lumG = GrayScaleMultiplier.NtscGreen;
+                    lumB = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (grayMultiplier == FilterGrayScaleWeight.Natural)
+                {
+                    lumR = GrayScaleMultiplier.NaturalRed;
+                    lumG = GrayScaleMultiplier.NaturalGreen;
+                    lumB = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    lumR = ImagingUtility.RedLuminosity;
-                    lumG = ImagingUtility.GreenLuminosity;
-                    lumB = ImagingUtility.BlueLuminosity;
+                    lumR = GrayScaleMultiplier.AccurateRed;
+                    lumG = GrayScaleMultiplier.AccurateGreen;
+                    lumB = GrayScaleMultiplier.AccurateBlue;
                 }
 
                 for (y = bmp.StartY; y < endY; y++)
@@ -498,14 +504,14 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, int[] histGrey, GrayMultiplier grayMultiplier)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, int[] histGrey, FilterGrayScaleWeight grayMultiplier)
         {
             if (histGrey == null)
             {
-                ImageFilterError err = ImagingUtility.CalculateHistogram(bmp, Channel.Gray, out histGrey, grayMultiplier);
-                if (err != ImageFilterError.OK) return err;
+                FilterError err = HistogramHelper.CalculateHistogram(bmp, FilterColorChannel.Gray, out histGrey, grayMultiplier);
+                if (err != FilterError.OK) return err;
             }
 
             int cx = bmp.Width;
@@ -522,12 +528,12 @@ namespace dg.Utilities.Imaging.Filters
             int cdfmin = 0;
             cdf = NormalizeCDF(CalculateCDF(histGrey, numberOfPixels), numberOfPixels);
             cdfmin = FindLowestExcludingZero(cdf);
-            if (cdfmin == 0) return ImageFilterError.OK; // No cdf...
+            if (cdfmin == 0) return FilterError.OK; // No cdf...
 
             double numberOfPixels2 = numberOfPixels - cdfmin;
             int value;
 
-            if (grayMultiplier == GrayMultiplier.None)
+            if (grayMultiplier == FilterGrayScaleWeight.None)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -547,17 +553,23 @@ namespace dg.Utilities.Imaging.Filters
             {
                 double lumR, lumG, lumB;
 
-                if (grayMultiplier == GrayMultiplier.NaturalNTSC)
+                if (grayMultiplier == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    lumR = ImagingUtility.RedLuminosityNTSC;
-                    lumG = ImagingUtility.GreenLuminosityNTSC;
-                    lumB = ImagingUtility.BlueLuminosityNTSC;
+                    lumR = GrayScaleMultiplier.NtscRed;
+                    lumG = GrayScaleMultiplier.NtscGreen;
+                    lumB = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (grayMultiplier == FilterGrayScaleWeight.Natural)
+                {
+                    lumR = GrayScaleMultiplier.NaturalRed;
+                    lumG = GrayScaleMultiplier.NaturalGreen;
+                    lumB = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    lumR = ImagingUtility.RedLuminosity;
-                    lumG = ImagingUtility.GreenLuminosity;
-                    lumB = ImagingUtility.BlueLuminosity;
+                    lumR = GrayScaleMultiplier.AccurateRed;
+                    lumG = GrayScaleMultiplier.AccurateGreen;
+                    lumB = GrayScaleMultiplier.AccurateBlue;
                 }
 
                 for (y = bmp.StartY; y < endY; y++)
@@ -574,18 +586,18 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, int[] histGrey, GrayMultiplier grayMultiplier)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, int[] histGrey, FilterGrayScaleWeight grayMultiplier)
         {
             return ProcessImage32rgb(bmp, histGrey, grayMultiplier);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, int[] histGrey, GrayMultiplier grayMultiplier)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, int[] histGrey, FilterGrayScaleWeight grayMultiplier)
         {
             if (histGrey == null)
             {
-                ImageFilterError err = ImagingUtility.CalculateHistogram(bmp, Channel.Gray, out histGrey, grayMultiplier);
-                if (err != ImageFilterError.OK) return err;
+                FilterError err = HistogramHelper.CalculateHistogram(bmp, FilterColorChannel.Gray, out histGrey, grayMultiplier);
+                if (err != FilterError.OK) return err;
             }
 
             int cx = bmp.Width;
@@ -607,7 +619,7 @@ namespace dg.Utilities.Imaging.Filters
             double numberOfPixels2 = numberOfPixels - cdfmin;
             int value;
 
-            if (grayMultiplier == GrayMultiplier.None)
+            if (grayMultiplier == FilterGrayScaleWeight.None)
             {
                 for (y = bmp.StartY; y < endY; y++)
                 {
@@ -632,17 +644,23 @@ namespace dg.Utilities.Imaging.Filters
             {
                 double lumR, lumG, lumB;
 
-                if (grayMultiplier == GrayMultiplier.NaturalNTSC)
+                if (grayMultiplier == FilterGrayScaleWeight.NaturalNTSC)
                 {
-                    lumR = ImagingUtility.RedLuminosityNTSC;
-                    lumG = ImagingUtility.GreenLuminosityNTSC;
-                    lumB = ImagingUtility.BlueLuminosityNTSC;
+                    lumR = GrayScaleMultiplier.NtscRed;
+                    lumG = GrayScaleMultiplier.NtscGreen;
+                    lumB = GrayScaleMultiplier.NtscBlue;
+                }
+                else if (grayMultiplier == FilterGrayScaleWeight.Natural)
+                {
+                    lumR = GrayScaleMultiplier.NaturalRed;
+                    lumG = GrayScaleMultiplier.NaturalGreen;
+                    lumB = GrayScaleMultiplier.NaturalBlue;
                 }
                 else
                 {
-                    lumR = ImagingUtility.RedLuminosity;
-                    lumG = ImagingUtility.GreenLuminosity;
-                    lumB = ImagingUtility.BlueLuminosity;
+                    lumR = GrayScaleMultiplier.AccurateRed;
+                    lumG = GrayScaleMultiplier.AccurateGreen;
+                    lumB = GrayScaleMultiplier.AccurateBlue;
                 }
 
                 for (y = bmp.StartY; y < endY; y++)
@@ -662,7 +680,7 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

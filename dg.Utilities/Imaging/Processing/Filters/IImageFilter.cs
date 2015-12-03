@@ -4,11 +4,11 @@ using System.Text;
 using System.Drawing.Imaging;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     interface IImageFilter
     {
-        ImageFilterError ProcessImage(
+        FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args);
     }

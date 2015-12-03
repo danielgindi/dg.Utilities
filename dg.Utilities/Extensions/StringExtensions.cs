@@ -275,7 +275,7 @@ namespace dg.Utilities
 
             StringBuilder sb = new StringBuilder();
             int firstSharp = -1;
-            bool sharpOk = false;
+
             char c;
             for (int j = 0; j < input.Length; j++)
             {
@@ -325,6 +325,7 @@ namespace dg.Utilities
             {
                 sb.Append(input.Substring(firstSharp));
             }
+
             return sb.ToString();
         }
     }

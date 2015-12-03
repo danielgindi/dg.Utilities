@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class Pixellate : IImageFilter
     {
@@ -48,7 +48,7 @@ namespace dg.Utilities.Imaging.Filters
             Interpolate = 2
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -65,7 +65,7 @@ namespace dg.Utilities.Imaging.Filters
                     mode = (Mode)arg;
                 }
             }
-            if (blockSize == null) return ImageFilterError.MissingArgument;
+            if (blockSize == null) return FilterError.MissingArgument;
 
             switch (bmp.Bitmap.PixelFormat)
             {
@@ -74,18 +74,18 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, blockSize, mode);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, blockSize, mode);
+                    return ProcessImage32rgba(bmp, blockSize, mode);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, blockSize, mode);
+                    return ProcessImage32prgba(bmp, blockSize, mode);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
 
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
         {
-            if (blockSize == null) return ImageFilterError.MissingArgument;
-            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return ImageFilterError.OK;
+            if (blockSize == null) return FilterError.MissingArgument;
+            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return FilterError.OK;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -158,16 +158,16 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
         {
-            return ProcessImage32argb(bmp, blockSize, mode);
+            return ProcessImage32rgba(bmp, blockSize, mode);
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
         {
-            if (blockSize == null) return ImageFilterError.MissingArgument;
-            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return ImageFilterError.OK;
+            if (blockSize == null) return FilterError.MissingArgument;
+            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return FilterError.OK;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -246,12 +246,12 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, BlockSize blockSize, Mode mode)
         {
-            if (blockSize == null) return ImageFilterError.MissingArgument;
-            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return ImageFilterError.OK;
+            if (blockSize == null) return FilterError.MissingArgument;
+            if (blockSize.BlockCx == 1 && blockSize.BlockCy == 1) return FilterError.OK;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -338,7 +338,7 @@ namespace dg.Utilities.Imaging.Filters
                     }
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

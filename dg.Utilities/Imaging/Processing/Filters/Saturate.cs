@@ -3,16 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class Saturate : IImageFilter
     {
-        public enum Mode
-        {
-            Natural = 0,
-            NaturalNTSC = 1,
-            Accurate = 2
-        }
         public class Amount
         {
             private float _Value = 1f;
@@ -27,17 +21,17 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
-            Mode mode = Mode.Natural;
+            FilterGrayScaleWeight mode = FilterGrayScaleWeight.Natural;
             Amount amount = new Amount(1f);
             foreach (object arg in args)
             {
-                if (arg is Mode)
+                if (arg is FilterGrayScaleWeight)
                 {
-                    mode = (Mode)arg;
+                    mode = (FilterGrayScaleWeight)arg;
                 }
                 else if (arg is Amount)
                 {
@@ -52,16 +46,17 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, mode, amount);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, mode, amount);
+                    return ProcessImage32rgba(bmp, mode, amount);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, mode, amount);
+                    return ProcessImage32prgba(bmp, mode, amount);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, Mode mode, Amount amount)
+
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, FilterGrayScaleWeight mode, Amount amount)
         {
-            if (amount == null) return ImageFilterError.MissingArgument;
+            if (amount == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -73,23 +68,23 @@ namespace dg.Utilities.Imaging.Filters
             int x, y;
 
             float rL = 0, gL = 0, bL = 0;
-            if (mode == Mode.NaturalNTSC)
+            if (mode == FilterGrayScaleWeight.NaturalNTSC)
             {
-                rL = ImagingUtility.RedLuminosityNTSC;
-                gL = ImagingUtility.GreenLuminosityNTSC;
-                bL = ImagingUtility.BlueLuminosityNTSC;
+                rL = GrayScaleMultiplier.NtscRed;
+                gL = GrayScaleMultiplier.NtscGreen;
+                bL = GrayScaleMultiplier.NtscBlue;
             }
-            else if (mode == Mode.Natural)
+            else if (mode == FilterGrayScaleWeight.Natural)
             {
-                rL = ImagingUtility.RedLuminosity;
-                gL = ImagingUtility.GreenLuminosity;
-                bL = ImagingUtility.BlueLuminosity;
+                rL = GrayScaleMultiplier.NaturalRed;
+                gL = GrayScaleMultiplier.NaturalGreen;
+                bL = GrayScaleMultiplier.NaturalBlue;
             }
             else
             {
-                rL = 0.334f;
-                gL = 0.333f;
-                bL = 0.333f;
+                rL = GrayScaleMultiplier.AccurateRed;
+                gL = GrayScaleMultiplier.AccurateGreen;
+                bL = GrayScaleMultiplier.AccurateBlue;
             }
 
             float M1_1, M1_2, M1_3, M2_1, M2_2, M2_3, M3_1, M3_2, M3_3;
@@ -128,11 +123,12 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, Mode mode, Amount amount)
+
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, FilterGrayScaleWeight mode, Amount amount)
         {
-            if (amount == null) return ImageFilterError.MissingArgument;
+            if (amount == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -144,23 +140,24 @@ namespace dg.Utilities.Imaging.Filters
             int x, y;
 
             float rL = 0, gL = 0, bL = 0;
-            if (mode == Mode.NaturalNTSC)
+
+            if (mode == FilterGrayScaleWeight.NaturalNTSC)
             {
-                rL = ImagingUtility.RedLuminosityNTSC;
-                gL = ImagingUtility.GreenLuminosityNTSC;
-                bL = ImagingUtility.BlueLuminosityNTSC;
+                rL = GrayScaleMultiplier.NtscRed;
+                gL = GrayScaleMultiplier.NtscGreen;
+                bL = GrayScaleMultiplier.NtscBlue;
             }
-            else if (mode == Mode.Natural)
+            else if (mode == FilterGrayScaleWeight.Natural)
             {
-                rL = ImagingUtility.RedLuminosity;
-                gL = ImagingUtility.GreenLuminosity;
-                bL = ImagingUtility.BlueLuminosity;
+                rL = GrayScaleMultiplier.NaturalRed;
+                gL = GrayScaleMultiplier.NaturalGreen;
+                bL = GrayScaleMultiplier.NaturalBlue;
             }
             else
             {
-                rL = 0.334f;
-                gL = 0.333f;
-                bL = 0.333f;
+                rL = GrayScaleMultiplier.AccurateRed;
+                gL = GrayScaleMultiplier.AccurateGreen;
+                bL = GrayScaleMultiplier.AccurateBlue;
             }
 
             float M1_1, M1_2, M1_3, M2_1, M2_2, M2_3, M3_1, M3_2, M3_3;
@@ -199,15 +196,17 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, Mode mode, Amount amount)
+
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, FilterGrayScaleWeight mode, Amount amount)
         {
             return ProcessImage32rgb(bmp, mode, amount);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, Mode mode, Amount amount)
+
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, FilterGrayScaleWeight mode, Amount amount)
         {
-            if (amount == null) return ImageFilterError.MissingArgument;
+            if (amount == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -220,23 +219,24 @@ namespace dg.Utilities.Imaging.Filters
             float preAlpha;
 
             float rL = 0, gL = 0, bL = 0;
-            if (mode == Mode.NaturalNTSC)
+
+            if (mode == FilterGrayScaleWeight.NaturalNTSC)
             {
-                rL = ImagingUtility.RedLuminosityNTSC;
-                gL = ImagingUtility.GreenLuminosityNTSC;
-                bL = ImagingUtility.BlueLuminosityNTSC;
+                rL = GrayScaleMultiplier.NtscRed;
+                gL = GrayScaleMultiplier.NtscGreen;
+                bL = GrayScaleMultiplier.NtscBlue;
             }
-            else if (mode == Mode.Natural)
+            else if (mode == FilterGrayScaleWeight.Natural)
             {
-                rL = ImagingUtility.RedLuminosity;
-                gL = ImagingUtility.GreenLuminosity;
-                bL = ImagingUtility.BlueLuminosity;
+                rL = GrayScaleMultiplier.NaturalRed;
+                gL = GrayScaleMultiplier.NaturalGreen;
+                bL = GrayScaleMultiplier.NaturalBlue;
             }
             else
             {
-                rL = 0.334f;
-                gL = 0.333f;
-                bL = 0.333f;
+                rL = GrayScaleMultiplier.AccurateRed;
+                gL = GrayScaleMultiplier.AccurateGreen;
+                bL = GrayScaleMultiplier.AccurateBlue;
             }
 
             float M1_1, M1_2, M1_3, M2_1, M2_2, M2_3, M3_1, M3_2, M3_3;
@@ -278,7 +278,7 @@ namespace dg.Utilities.Imaging.Filters
                 }
             }
 
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

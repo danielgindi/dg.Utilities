@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing.Imaging;
 
-namespace dg.Utilities.Imaging.Filters
+namespace dg.Utilities.Imaging.Processing.Filters
 {
     public class GammaCorrection : IImageFilter
     {
@@ -50,7 +50,7 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public ImageFilterError ProcessImage(
+        public FilterError ProcessImage(
             DirectAccessBitmap bmp,
             params object[] args)
         {
@@ -62,7 +62,7 @@ namespace dg.Utilities.Imaging.Filters
                     gamma = (GammaValue)arg;
                 }
             }
-            if (gamma == null) return ImageFilterError.MissingArgument;
+            if (gamma == null) return FilterError.MissingArgument;
 
             switch (bmp.Bitmap.PixelFormat)
             {
@@ -71,11 +71,11 @@ namespace dg.Utilities.Imaging.Filters
                 case PixelFormat.Format32bppRgb:
                     return ProcessImage32rgb(bmp, gamma);
                 case PixelFormat.Format32bppArgb:
-                    return ProcessImage32argb(bmp, gamma);
+                    return ProcessImage32rgba(bmp, gamma);
                 case PixelFormat.Format32bppPArgb:
-                    return ProcessImage32pargb(bmp, gamma);
+                    return ProcessImage32prgba(bmp, gamma);
                 default:
-                    return ImageFilterError.IncompatiblePixelFormat;
+                    return FilterError.IncompatiblePixelFormat;
             }
         }
         public static void BuildGammaArray(float gamma, out byte[] arrGamma)
@@ -92,9 +92,9 @@ namespace dg.Utilities.Imaging.Filters
             }
         }
 
-        public ImageFilterError ProcessImage24rgb(DirectAccessBitmap bmp, GammaValue gamma)
+        public FilterError ProcessImage24rgb(DirectAccessBitmap bmp, GammaValue gamma)
         {
-            if (gamma == null) return ImageFilterError.MissingArgument;
+            if (gamma == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -120,11 +120,11 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = arrRed[data[pos2 + 2]];
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32rgb(DirectAccessBitmap bmp, GammaValue gamma)
+        public FilterError ProcessImage32rgb(DirectAccessBitmap bmp, GammaValue gamma)
         {
-            if (gamma == null) return ImageFilterError.MissingArgument;
+            if (gamma == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -150,15 +150,15 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = arrRed[data[pos2 + 2]];
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
-        public ImageFilterError ProcessImage32argb(DirectAccessBitmap bmp, GammaValue gamma)
+        public FilterError ProcessImage32rgba(DirectAccessBitmap bmp, GammaValue gamma)
         {
             return ProcessImage32rgb(bmp, gamma);
         }
-        public ImageFilterError ProcessImage32pargb(DirectAccessBitmap bmp, GammaValue gamma)
+        public FilterError ProcessImage32prgba(DirectAccessBitmap bmp, GammaValue gamma)
         {
-            if (gamma == null) return ImageFilterError.MissingArgument;
+            if (gamma == null) return FilterError.MissingArgument;
 
             int cx = bmp.Width;
             int cy = bmp.Height;
@@ -188,7 +188,7 @@ namespace dg.Utilities.Imaging.Filters
                     data[pos2 + 2] = (byte)(arrRed[(byte)(data[pos2 + 2] / preAlpha)] * preAlpha);
                 }
             }
-            return ImageFilterError.OK;
+            return FilterError.OK;
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Web;
 using System.Drawing;
 
-namespace dg.Utilities.Imaging
+namespace dg.Utilities.Imaging.Processing
 {
     public class ColorArgument
     {

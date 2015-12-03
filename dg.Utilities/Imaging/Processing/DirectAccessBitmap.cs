@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 
-namespace dg.Utilities.Imaging
+namespace dg.Utilities.Imaging.Processing
 {
     public class DirectAccessBitmap : IDisposable
     {
