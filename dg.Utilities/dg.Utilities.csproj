@@ -67,6 +67,7 @@
     <Compile Include="GoogleCloudMessaging\NotificationPayload.cs" />
     <Compile Include="GoogleCloudMessaging\HttpNotificationService.cs" />
     <Compile Include="Imaging\Constants\GrayScaleMultiplier.cs" />
+    <Compile Include="Imaging\ProcessingHelper.cs" />
     <Compile Include="Imaging\HistogramHelper.cs" />
     <Compile Include="Imaging\Decoders\ImageDimensionsDecoder.cs" />
     <Compile Include="Imaging\Processing\Enumerations.cs" />
