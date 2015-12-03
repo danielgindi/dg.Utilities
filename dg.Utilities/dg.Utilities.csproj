@@ -70,6 +70,7 @@
     <Compile Include="Imaging\HistogramHelper.cs" />
     <Compile Include="Imaging\Decoders\ImageDimensionsDecoder.cs" />
     <Compile Include="Imaging\Processing\Enumerations.cs" />
+    <Compile Include="Imaging\Processing\Filters\ReduceTransparency.cs" />
     <Compile Include="Markups\Markdown\Markdown.cs" />
     <Compile Include="Serialization\SerializableLongLongKey.cs" />
     <Compile Include="Serialization\SerializableIntIntKey.cs" />
