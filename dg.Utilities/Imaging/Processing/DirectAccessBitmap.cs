@@ -228,6 +228,24 @@ namespace dg.Utilities.Imaging.Processing
         }
         #endregion
 
+        public Bitmap DetachBitmap()
+        {
+            Bitmap bmp = _Bitmap;
+            _Bitmap = null;
+
+            if (_ByteArray != null)
+            {
+                _ByteArray.ReleaseReference();
+                if (Owner != null)
+                {
+                    _ByteArray.Dispose();
+                }
+                _ByteArray = null;
+            }
+
+            return bmp;
+        }
+
         #region IDisposable Members
 
         private bool _Disposed = false;
@@ -235,39 +253,27 @@ namespace dg.Utilities.Imaging.Processing
         {
             Dispose(true);
         }
+
         protected void Dispose(bool disposing)
         {
-            if(_Disposed) return;
+            if (_Disposed) return;
 
             if (disposing)
             {
                 // Release Managed Resources
-                if (Owner != null)
+                if (_ByteArray != null)
                 {
-                    if (_ByteArray != null)
+                    _ByteArray.ReleaseReference();
+                    if (Owner != null)
                     {
-                        _ByteArray.ReleaseReference();
-                        _ByteArray = null;
-                    }
-                    if (_Bitmap != null)
-                    {
-                        _Bitmap.Dispose();
-                        _Bitmap = null;
-                    }
-                }
-                else
-                {
-                    if (_ByteArray != null)
-                    {
-                        _ByteArray.ReleaseReference();
                         _ByteArray.Dispose();
-                        _ByteArray = null;
                     }
-                    if (_Bitmap != null)
-                    {
-                        _Bitmap.Dispose();
-                        _Bitmap = null;
-                    }
+                    _ByteArray = null;
+                }
+                if (_Bitmap != null)
+                {
+                    _Bitmap.Dispose();
+                    _Bitmap = null;
                 }
             }
             // Now clean up Native Resources (Pointers)
