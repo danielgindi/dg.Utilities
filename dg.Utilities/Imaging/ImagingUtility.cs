@@ -646,6 +646,48 @@ namespace dg.Utilities.Imaging
                 return retValue;
             }
         }
+
+        public static string MimeTypeForFormat(ImageFormat imageFormat)
+        {
+            if (imageFormat.Equals(ImageFormat.Jpeg))
+            {
+                return "image/jpeg";
+            }
+            else if (imageFormat.Equals(ImageFormat.Png))
+            {
+                return "image/png";
+            }
+            else if (imageFormat.Equals(ImageFormat.Gif))
+            {
+                return "image/gif";
+            }
+            else if (imageFormat.Equals(ImageFormat.Bmp))
+            {
+                return "image/bmp";
+            }
+            else if (imageFormat.Equals(ImageFormat.Emf))
+            {
+                return "image/x-emf";
+            }
+            else if (imageFormat.Equals(ImageFormat.Exif))
+            {
+                return "image/x-exif";
+            }
+            else if (imageFormat.Equals(ImageFormat.Icon))
+            {
+                return "image/x-icon";
+            }
+            else if (imageFormat.Equals(ImageFormat.Tiff))
+            {
+                return "image/tiff";
+            }
+            else if (imageFormat.Equals(ImageFormat.Wmf))
+            {
+                return "image/x-wmf";
+            }
+
+            return "image/x-unknown";
+        }
     }
 
 }
