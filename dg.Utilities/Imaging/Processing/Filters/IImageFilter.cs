@@ -6,7 +6,7 @@ using System.Drawing;
 
 namespace dg.Utilities.Imaging.Processing.Filters
 {
-    interface IImageFilter
+    public interface IImageFilter
     {
         FilterError ProcessImage(
             DirectAccessBitmap bmp,
