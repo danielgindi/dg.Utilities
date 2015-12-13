@@ -10,6 +10,7 @@ namespace dg.Utilities.CSV
         private StreamReader StreamReader = null;
         private Stream _Stream = null;
         private bool _MultilineSupport = true;
+        private bool _LastLineEndCR = false;
 
         public CsvReader(Stream inputStream)
         {
@@ -86,6 +87,20 @@ namespace dg.Utilities.CSV
                     {
                         char c = (char)StreamReader.Read();
 
+                        if (c == '\n' || c == '\r')
+                        {
+                            if (!isQuoted)
+                            {
+                                if (_LastLineEndCR && c == '\n')
+                                {
+                                    _LastLineEndCR = false;
+                                    continue;
+                                }
+                                _LastLineEndCR = c == '\r';
+                                break;
+                            }
+                        }
+
                         if (isQuoted)
                         {
                             if (c == '"')
@@ -122,10 +137,6 @@ namespace dg.Utilities.CSV
                                 {
                                     isQuoted = true;
                                 }
-                            }
-                            else if (c == '\n')
-                            {
-                                break;
                             }
                             else
                             {
@@ -190,9 +201,19 @@ namespace dg.Utilities.CSV
                     }
                 }
 
-                columns.Add(sbColumn.ToString());
+                if (columns.Count > 0 || sbColumn.Length > 0 || !StreamReader.EndOfStream)
+                {
+                    // We have a row, return it
 
-                return columns.ToArray();
+                    columns.Add(sbColumn.ToString());
+
+                    return columns.ToArray();
+                }
+                else
+                {
+                    // We just ran into a newline at the end of the file, ignore it
+                    return null;
+                }
             }
         }
     }
