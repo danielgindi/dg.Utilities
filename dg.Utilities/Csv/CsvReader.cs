@@ -93,6 +93,7 @@ namespace dg.Utilities.CSV
                                 if (!StreamReader.EndOfStream && (char)StreamReader.Peek() == '"')
                                 {
                                     sbColumn.Append('"');
+                                    StreamReader.Read(); // Skip next quote mark (")
                                 }
                                 else
                                 {
