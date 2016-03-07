@@ -30,14 +30,16 @@ namespace dg.Utilities
             InternalSplitOmitEmptyEntries(source, sepList, null, numReplaces,
                 out arrStrings, out arrWhitespace);
         }
-        private unsafe static int MakeSeparatorList(string source, char[] separator, ref int[] sepList)
+
+        private static int MakeSeparatorList(string source, char[] separator, ref int[] sepList)
         {
             int num = 0;
+            int sourceLength = source.Length;
             int length = sepList.Length;
-            int length2 = separator.Length;
-            if ((separator == null) || (length2 == 0))
+            int separatorCount = separator.Length;
+            if ((separator == null) || (separatorCount == 0))
             {
-                for (int i = 0; (i < source.Length) && (num < length); i++)
+                for (int i = 0; (i < sourceLength) && (num < length); i++)
                 {
                     if (char.IsWhiteSpace(source[i]))
                     {
@@ -46,26 +48,22 @@ namespace dg.Utilities
                 }
                 return num;
             }
-            fixed (char* chRef3 = separator)
+
+            for (int j = 0; (j < sourceLength) && (num < length); j++)
             {
-                for (int j = 0; (j < source.Length) && (num < length); j++)
+                for (int x = 0; x < separatorCount; x++)
                 {
-                    char* chPtr = chRef3;
-                    int x = 0;
-                    while (x < length2)
+                    if (source[j] == separator[x])
                     {
-                        if (source[j] == chPtr[0])
-                        {
-                            sepList[num++] = j;
-                            break;
-                        }
-                        x++;
-                        chPtr++;
+                        sepList[num++] = j;
+                        break;
                     }
                 }
             }
+
             return num;
         }
+
         private static void InternalSplitOmitEmptyEntries(
             string source, int[] sepList, int[] lengthList, int numReplaces,
             out string[] arrStrings, out string[] arrWhitespace)
