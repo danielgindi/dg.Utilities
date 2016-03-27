@@ -6,7 +6,7 @@ using System.IO.Compression;
 
 namespace dg.Utilities
 {
-    public static class HttpResponseHelpers
+    public static class HttpResponseHelper
     {
         public static void EnableCompressionInResponseToRequest(HttpResponse response, HttpRequest request)
         {
