@@ -6,13 +6,16 @@ using System.Web;
 
 namespace dg.Utilities
 {
-    public static class Strings
+    public static class StringHelper
     {
+        #region Split
+
         /// <summary>
         /// Split a string, and give also an array of the whitespace that was stripped
         /// </summary>
         /// <returns></returns>
-        public static void Split(string source, char[] separator,
+        public static void Split(
+            string source, char[] separator,
             out string[] arrStrings, out string[] arrWhitespace)
         {
             if ((source.Length == 0))
@@ -99,6 +102,7 @@ namespace dg.Utilities
                     break;
                 }
             }
+
             if (startIndex < source.Length)
             {
                 if (startIndex > 0)
@@ -111,14 +115,19 @@ namespace dg.Utilities
                 arrStrings1[actualStringCount++] = source.Substring(startIndex);
                 lastIndex = source.Length;
             }
+
             if (lastIndex < source.Length)
             {
                 arrWhitespace1[actualStringCount] = source.Substring(lastIndex);
             }
-            else arrWhitespace1[actualStringCount] = string.Empty;
+            else
+            {
+                arrWhitespace1[actualStringCount] = string.Empty;
+            }
 
             arrStrings = arrStrings1;
             arrWhitespace = arrWhitespace1;
+
             if (actualStringCount != maxStrings)
             {
                 arrStrings = new string[actualStringCount];
@@ -171,6 +180,10 @@ namespace dg.Utilities
             return lstString.ToArray();
         }
 
+        #endregion
+
+        #region Split to numbers
+
         public static int[] SplitToIntegers(string source, params char[] delimiters)
         {
             string[] strs = source.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
@@ -182,6 +195,7 @@ namespace dg.Utilities
             }
             return lst.ToArray();
         }
+
         public static Int64[] SplitToInt64(string source, params char[] delimiters)
         {
             string[] strs = source.Split(delimiters, StringSplitOptions.RemoveEmptyEntries);
@@ -194,6 +208,10 @@ namespace dg.Utilities
             return lst.ToArray();
         }
 
+        #endregion
+
+        #region Strip Html
+
         public static string StripHtml(string content, int maxChars, out bool wasCut)
         {
             string stripped = StripHtml(content);
@@ -202,10 +220,12 @@ namespace dg.Utilities
             else wasCut = false;
             return cut;
         }
+
         public static string StripHtml(string content, int maxChars)
         {
             return CutByWords(StripHtml(content), maxChars);
         }
+
         public static string StripHtml(string content)
         {
             //Strips the <script> tags from the Html
@@ -234,6 +254,11 @@ namespace dg.Utilities
 
             return content;
         }
+
+        #endregion
+
+        #region Cut by words
+
         public static string CutByWords(string text, int maxChars)
         {
             if (maxChars > 0 && text.Length > maxChars)
@@ -250,6 +275,17 @@ namespace dg.Utilities
 
             return text;
         }
+
+        public static string CutByWords(string text, int maxChars, string suffixWhenCut)
+        {
+            string cut = CutByWords(text, maxChars);
+            if (text.Length != cut.Length) cut += suffixWhenCut;
+            return cut;
+        }
+
+        #endregion
+
+        #region Random
 
         /// <summary>
         /// Generates a random string.
@@ -305,20 +341,21 @@ namespace dg.Utilities
             return randomString;
         }
 
-        /// <summary>
-        /// Encodes critical html entities
-        /// </summary>
-        public static string HtmlEncode(string strInputEntry)
+        #endregion
+
+        #region Html
+
+        public static string EncodeHtml(string plain, bool newlines = false)
         {
             // The StringBuilder method saves a lot of resources (both memory and processing),
             //   in comparison to the Replace method.
-            //   unless the string has absolutly no work to do... 
+            //   unless the string has absolutely no work to do... 
             //   But we use this when we do expect work to be done.
-            if (strInputEntry == null) return string.Empty;
+            if (plain == null) return string.Empty;
             else
             {
                 StringBuilder sb = new StringBuilder();
-                foreach (char c in strInputEntry)
+                foreach (char c in plain)
                 {
                     if (c == '&') sb.Append(@"&amp;");
                     else if (c == '<') sb.Append(@"&lt;");
@@ -327,9 +364,164 @@ namespace dg.Utilities
                     else if (c == '"') sb.Append(@"&quot;");
                     else sb.Append(c);
                 }
-                return sb.ToString();
+
+                var html = sb.ToString();
+
+                if (newlines)
+                {
+                    html = html.Replace("\n", @"<br />");
+                }
+
+                return html;
             }
         }
+
+        #endregion
+
+        #region Camel case
+
+        public static string UnCamelCase(string camelCase)
+        {
+            char[] letters = camelCase.ToCharArray();
+            string sOut = "";
+            foreach (char c in letters)
+            {
+                if (c.ToString() != c.ToString().ToLower())
+                {
+                    //it's uppercase, add a space
+                    sOut += " " + c.ToString();
+                }
+                else
+                {
+                    sOut += c.ToString();
+                }
+            }
+            return sOut;
+        }
+
+        #endregion
+
+        #region JavaScript
+
+        private static string ToCharAsUnicode(char c)
+        {
+            char h1 = IntToHex((c >> 12) & '\x000f');
+            char h2 = IntToHex((c >> 8) & '\x000f');
+            char h3 = IntToHex((c >> 4) & '\x000f');
+            char h4 = IntToHex(c & '\x000f');
+            return new string(new[] { '\\', 'u', h1, h2, h3, h4 });
+        }
+
+        private static char IntToHex(int n)
+        {
+            if (n <= 9)
+            {
+                return (char)(n + 48);
+            }
+            return (char)((n - 10) + 97);
+        }
+
+        public static string EncodeJavaScript(string plain, char delimiter, bool appendDelimiters)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            // leading delimiter
+            if (appendDelimiters) sb.Append(delimiter);
+
+            if (plain != null)
+            {
+                int lastWritePosition = 0;
+                int skipped = 0;
+                char[] chars = null;
+
+                for (int i = 0; i < plain.Length; i++)
+                {
+                    char c = plain[i];
+                    string escapedValue;
+
+                    switch (c)
+                    {
+                        case '\t':
+                            escapedValue = @"\t";
+                            break;
+                        case '\n':
+                            escapedValue = @"\n";
+                            break;
+                        case '\r':
+                            escapedValue = @"\r";
+                            break;
+                        case '\f':
+                            escapedValue = @"\f";
+                            break;
+                        case '\b':
+                            escapedValue = @"\b";
+                            break;
+                        case '\\':
+                            escapedValue = @"\\";
+                            break;
+                        case '\u0085': // Next Line
+                            escapedValue = @"\u0085";
+                            break;
+                        case '\u2028': // Line Separator
+                            escapedValue = @"\u2028";
+                            break;
+                        case '\u2029': // Paragraph Separator
+                            escapedValue = @"\u2029";
+                            break;
+                        case '\'':
+                            // only escape if this charater is being used as the delimiter
+                            escapedValue = (delimiter == '\'') ? @"\'" : null;
+                            break;
+                        case '"':
+                            // only escape if this charater is being used as the delimiter
+                            escapedValue = (delimiter == '"') ? "\\\"" : null;
+                            break;
+                        default:
+                            escapedValue = (c <= '\u001f') ? ToCharAsUnicode(c) : null;
+                            break;
+                    }
+
+                    if (escapedValue != null)
+                    {
+                        if (chars == null)
+                            chars = plain.ToCharArray();
+
+                        // write skipped text
+                        if (skipped > 0)
+                        {
+                            sb.Append(chars, lastWritePosition, skipped);
+                            skipped = 0;
+                        }
+
+                        // write escaped value and note position
+                        sb.Append(escapedValue);
+                        lastWritePosition = i + 1;
+                    }
+                    else
+                    {
+                        skipped++;
+                    }
+                }
+
+                // write any remaining skipped text
+                if (skipped > 0)
+                {
+                    if (lastWritePosition == 0)
+                        sb.Append(plain);
+                    else
+                        sb.Append(chars, lastWritePosition, skipped);
+                }
+            }
+
+            // trailing delimiter
+            if (appendDelimiters) sb.Append(delimiter);
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+        #region Email
 
         public static bool IsValidEmail(string email)
         {
@@ -359,45 +551,9 @@ namespace dg.Utilities
             return un + domain;
         }
 
-        public static bool IsValidURL(string url)
-        {
-            return Regex.IsMatch(url, @"^(http|https|ftp)\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&%\$#\=~])*[^\.\,\)\(\s]$");
-        }
-        public static bool IsValidURL(string url, string ext, StringComparison comparisonType)
-        {
-            ext = ext.Trim();
-            if (ext.StartsWith(@"."))
-            {
-                return url.EndsWith(ext, comparisonType) && IsValidURL(url);
-            }
-            else
-            {
-                return url.EndsWith(@"." + ext, comparisonType) && IsValidURL(url);
-            }
-        }
-        public static bool IsValidURL(string url, string ext)
-        {
-            return IsValidURL(url, ext, StringComparison.Ordinal);
-        }
+        #endregion
 
-        public static string UnCamelCase(string camelCase)
-        {
-            char[] letters = camelCase.ToCharArray();
-            string sOut = "";
-            foreach (char c in letters)
-            {
-                if (c.ToString() != c.ToString().ToLower())
-                {
-                    //it's uppercase, add a space
-                    sOut += " " + c.ToString();
-                }
-                else
-                {
-                    sOut += c.ToString();
-                }
-            }
-            return sOut;
-        }
+        #region Levenshtein Distance
 
         /// <summary>
         /// Computes a distance between two strings (count of single actions taken to get from string A to string B)
@@ -449,5 +605,122 @@ namespace dg.Utilities
             // Step 7
             return d[n, m];
         }
+
+        #endregion
+
+        #region Enums
+
+        public static T ParseAsEnum<T>(string value)
+        {
+            if (value == null || value.Length == 0)
+            {
+                throw new ArgumentNullException
+                    ("Can't parse an empty string");
+            }
+
+            Type enumType = typeof(T);
+            if (!enumType.IsEnum)
+            {
+                throw new InvalidOperationException("The type is not an Enum");
+            }
+
+            // warning, can throw
+            return (T)Enum.Parse(enumType, value);
+        }
+
+        #endregion
+
+        #region Sharp replacer
+
+        public delegate string SharpCodeValueDelegate(string code);
+
+        /// <summary>
+        /// Replaces codes in the strings with the values from the dictionary.
+        /// Code may appear in the #CODE# form.
+        /// Use double sharp (##) to escape where a literal is required.
+        /// Keys that do not appear in the dictionary - will not be replaced
+        /// </summary>
+        /// <param name="text">The input text</param>
+        /// <param name="keyValueMap">Dictionary of the code->value mappings</param>
+        /// <param name="preserveNotFoundValues">Dictionary of the code->value mappings</param>
+        /// <returns>Processed data after replacing the sharps with the corresponding values</returns>
+        public static string ReplaceSharps(string input, Dictionary<string, string> keyValueMap, bool preserveNotFoundValues = true)
+        {
+            if (input == null || input.Length == 0) return input;
+
+            return input.ReplaceSharps(key => { string value = null; keyValueMap.TryGetValue(key, out value); return value; }, preserveNotFoundValues);
+        }
+
+        /// <summary>
+        /// Replaces codes in the strings with the values from the dictionary.
+        /// Code may appear in the #CODE# form.
+        /// Use double sharp (##) to escape where a literal is required.
+        /// Keys that do not appear in the dictionary - will not be replaced
+        /// </summary>
+        /// <param name="text">The input text</param>
+        /// <param name="supplier">Supplier of values for specific codes</param>
+        /// <param name="preserveNotFoundValues">Dictionary of the code->value mappings</param>
+        /// <returns>Processed data after replacing the sharps with the corresponding values</returns>
+        public static string ReplaceSharps(string input, SharpCodeValueDelegate supplier, bool preserveNotFoundValues = true)
+        {
+            if (input == null || input.Length == 0) return input;
+
+            StringBuilder sb = new StringBuilder();
+            int firstSharp = -1;
+
+            char c;
+            for (int j = 0; j < input.Length; j++)
+            {
+                c = input[j];
+                if (c == '#')
+                {
+                    if (firstSharp == -1)
+                    {
+                        firstSharp = j;
+                    }
+                    else if (firstSharp == j - 1)
+                    { // Convert ## to #, to allow escaping those #
+                        firstSharp = -1;
+                        sb.Append(c);
+                    }
+                    else
+                    {
+                        string value = null;
+                        if (j - firstSharp > 1)
+                        {
+                            if (supplier != null)
+                            {
+                                value = supplier(input.Substring(firstSharp + 1, j - firstSharp - 1));
+                            }
+                            if (value != null)
+                            {
+                                sb.Append(value);
+                            }
+                        }
+                        if (value != null || !preserveNotFoundValues)
+                        {
+                            firstSharp = -1;
+                        }
+                        else
+                        {
+                            sb.Append(input.Substring(firstSharp, j - firstSharp));
+                            firstSharp = j;
+                        }
+                    }
+                }
+                else if (firstSharp == -1)
+                {
+                    sb.Append(c);
+                }
+            }
+            if (firstSharp > -1)
+            {
+                sb.Append(input.Substring(firstSharp));
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 
 namespace dg.Utilities
 {
@@ -30,6 +31,29 @@ namespace dg.Utilities
             catch
             {
                 return uri;
+            }
+        }
+
+        public static bool IsValidURL(string url)
+        {
+            return Regex.IsMatch(url, @"^(http|https|ftp)\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&%\$#\=~])*[^\.\,\)\(\s]$");
+        }
+
+        public static bool IsValidURL(string url, string ext)
+        {
+            return IsValidURL(url, ext, StringComparison.Ordinal);
+        }
+
+        public static bool IsValidURL(string url, string ext, StringComparison comparisonType)
+        {
+            ext = ext.Trim();
+            if (ext.StartsWith(@"."))
+            {
+                return url.EndsWith(ext, comparisonType) && IsValidURL(url);
+            }
+            else
+            {
+                return url.EndsWith(@"." + ext, comparisonType) && IsValidURL(url);
             }
         }
     }

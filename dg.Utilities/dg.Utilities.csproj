@@ -61,6 +61,7 @@
     <Compile Include="Apns\NotificationPayload.cs" />
     <Compile Include="Extensions\ArrayListExtensions.cs" />
     <Compile Include="Helpers\Base64Helper.cs" />
+    <Compile Include="Helpers\StringHelper.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
     <Compile Include="Helpers\HttpResponseHelper.cs" />
     <Compile Include="General Utilities\EndianSensitiveReader.cs" />
@@ -98,7 +99,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="General Utilities\Http.cs" />
     <Compile Include="General Utilities\Location.cs" />
-    <Compile Include="General Utilities\Strings.cs" />
+    <Compile Include="General Utilities\Deprecated\Strings.cs" />
     <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="General Utilities\Folders.cs" />
     <Compile Include="General Utilities\Mail.cs" />
