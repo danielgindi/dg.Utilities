@@ -60,6 +60,7 @@
     <Compile Include="Apns\NotificationDeliveryError.cs" />
     <Compile Include="Apns\NotificationPayload.cs" />
     <Compile Include="Extensions\ArrayListExtensions.cs" />
+    <Compile Include="Helpers\Base64Helper.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
     <Compile Include="Helpers\HttpResponseHelper.cs" />
     <Compile Include="General Utilities\EndianSensitiveReader.cs" />
