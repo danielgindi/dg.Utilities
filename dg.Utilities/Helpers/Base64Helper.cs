@@ -8,7 +8,12 @@ namespace dg.Utilities
 {
     public static class Base64Helper
     {
-        public static string ToString(string base64, bool ignoreErrors = false)
+        public static string Encode(string data, Base64FormattingOptions options = Base64FormattingOptions.None)
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(data), options);
+        }
+
+        public static string Decode(string base64, bool ignoreErrors = false)
         {
             try
             {
@@ -23,11 +28,6 @@ namespace dg.Utilities
 
                 throw;
             }
-        }
-
-        public static string Encode(string data, Base64FormattingOptions options = Base64FormattingOptions.None)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(data), options);
         }
     }
 }
