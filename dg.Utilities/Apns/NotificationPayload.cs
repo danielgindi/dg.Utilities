@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
+using dg.Utilities.Helpers;
 
 namespace dg.Utilities.Apns
 {
@@ -98,7 +99,7 @@ namespace dg.Utilities.Apns
                     && (this.Alert.LocalizedArgs == null || this.Alert.LocalizedArgs.Count <= 0))
                 {
                     json.Append(@"""alert"":");
-                    AppendJValue(json, this.Alert.Body);
+                    JsonHelper.WriteValue(this.Alert.Body, json);
                 }
                 else
                 {
@@ -110,35 +111,35 @@ namespace dg.Utilities.Apns
                     {
                         if (!alertFirst) json.Append(','); else alertFirst = false;
                         json.Append(@"""loc-key"":");
-                        AppendJValue(json, this.Alert.LocalizedKey);
+                        JsonHelper.WriteValue(this.Alert.LocalizedKey, json);
                     }
 
                     if (this.Alert.LocalizedArgs != null && this.Alert.LocalizedArgs.Count > 0)
                     {
                         if (!alertFirst) json.Append(','); else alertFirst = false;
                         json.Append(@"""loc-args"":");
-                        AppendJArray(json, this.Alert.LocalizedArgs.ToArray());
+                        JsonHelper.WriteValue(this.Alert.LocalizedArgs.ToArray(), json);
                     }
 
                     if (!string.IsNullOrEmpty(this.Alert.Body))
                     {
                         if (!alertFirst) json.Append(','); else alertFirst = false;
                         json.Append(@"""body"":");
-                        AppendJValue(json, this.Alert.Body);
+                        JsonHelper.WriteValue(this.Alert.Body, json);
                     }
 
                     if (!string.IsNullOrEmpty(this.Alert.LaunchImage))
                     {
                         if (!alertFirst) json.Append(','); else alertFirst = false;
                         json.Append(@"""launch-image"":");
-                        AppendJValue(json, this.Alert.LaunchImage);
+                        JsonHelper.WriteValue(this.Alert.LaunchImage, json);
                     }
 
                     if (!string.IsNullOrEmpty(this.Alert.ActionLocalizedKey))
                     {
                         if (!alertFirst) json.Append(','); else alertFirst = false;
                         json.Append(@"""action-loc-key"":");
-                        AppendJValue(json, this.Alert.ActionLocalizedKey);
+                        JsonHelper.WriteValue(this.Alert.ActionLocalizedKey, json);
                     }
 
                     json.Append('}');
@@ -149,21 +150,21 @@ namespace dg.Utilities.Apns
             {
                 if (!apsFirst) json.Append(','); else apsFirst = false;
                 json.Append(@"""badge"":");
-                AppendJValue(json, this.Badge.Value);
+                JsonHelper.WriteValue(this.Badge.Value, json);
             }
 
             if (!string.IsNullOrEmpty(this.Sound))
             {
                 if (!apsFirst) json.Append(','); else apsFirst = false;
                 json.Append(@"""sound"":");
-                AppendJValue(json, this.Sound);
+                JsonHelper.WriteValue(this.Sound, json);
             }
 
             if (this.ContentAvailable)
             {
                 if (!apsFirst) json.Append(','); else apsFirst = false;
                 json.Append(@"""content-available"":");
-                AppendJValue(json, 1);
+                JsonHelper.WriteValue(1, json);
             }
 
             json.Append('}'); // aps
@@ -175,11 +176,11 @@ namespace dg.Utilities.Apns
                 json.Append(@""":");
                 if (this.CustomItems[key].Length == 1)
                 {
-                    AppendJValue(json, this.CustomItems[key][0]);
+                    JsonHelper.WriteValue(this.CustomItems[key][0], json);
                 }
                 else if (this.CustomItems[key].Length > 1)
                 {
-                    AppendJArray(json, this.CustomItems[key]);
+                    JsonHelper.WriteValue(this.CustomItems[key], json);
                 }
             }
 
@@ -196,28 +197,6 @@ namespace dg.Utilities.Apns
                     encodedString.Append(c);
             }*/
             return rawString;// encodedString.ToString();
-        }
-        protected void AppendJArray(StringBuilder sb, object[] array)
-        {
-            bool first = true;
-            sb.Append('[');
-            foreach (object arg in array)
-            {
-                if (!first) sb.Append(','); else first = false;
-                AppendJValue(sb, arg);
-            }
-            sb.Append(']');
-        }
-        protected void AppendJValue(StringBuilder sb, object value)
-        {
-            if (value is string)
-            {
-                sb.Append(((string)value).ToJavaScript('"', true));
-            }
-            else
-            {
-                sb.AppendFormat(CultureInfo.InvariantCulture, @"{0}", value);
-            }
         }
 
         public override string ToString()

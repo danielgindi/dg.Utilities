@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Globalization;
+using dg.Utilities.Helpers;
 
 namespace dg.Utilities.GoogleCloudMessaging
 {
@@ -84,42 +85,45 @@ namespace dg.Utilities.GoogleCloudMessaging
             {
                 if (!first) json.Append(','); else first = false;
                 json.Append(@"""registration_ids"":");
-                AppendJArray(json, RegistrationIds);
+                JsonHelper.WriteValue(RegistrationIds, json);
             }
 
             if (NotificationKey != null)
             {
                 if (!first) json.Append(','); else first = false;
                 json.Append(@"""notification_key"":");
-                AppendJValue(json, NotificationKey);
+                JsonHelper.WriteValue(NotificationKey, json);
             }
 
             if (CollapseKey != null)
             {
                 if (!first) json.Append(','); else first = false;
                 json.Append(@"""collapse_key"":");
-                AppendJValue(json, CollapseKey);
+                JsonHelper.WriteValue(CollapseKey, json);
             }
 
             if (Data != null)
             {
-                if (!first) json.Append(','); else first = false;
+                if (!first) json.Append(',');
+                else first = false;
+
                 json.Append(@"""data"":{");
 
                 bool subFirst = true;
                 foreach (string key in Data.Keys)
                 {
-                    if (!subFirst) json.Append(','); else subFirst = false;
-                    json.Append(@"""");
-                    json.Append(key);
-                    json.Append(@""":");
+                    if (!subFirst) json.Append(',');
+                    else subFirst = false;
+                    
+                    JsonHelper.WriteValue(key, json);
+                    json.Append(':');
                     if (Data[key].Length == 1)
                     {
-                        AppendJValue(json, Data[key][0]);
+                        JsonHelper.WriteValue(Data[key][0], json);
                     }
                     else if (Data[key].Length > 1)
                     {
-                        AppendJArray(json, Data[key]);
+                        JsonHelper.WriteValue(Data[key], json);
                     }
                 }
 
@@ -128,59 +132,45 @@ namespace dg.Utilities.GoogleCloudMessaging
 
             if (DelayWhileIdle != null)
             {
-                if (!first) json.Append(','); else first = false;
+                if (!first) json.Append(',');
+                else first = false;
+
                 json.Append(@"""delay_while_idle"":");
-                AppendJValue(json, DelayWhileIdle.Value);
+                JsonHelper.WriteValue(DelayWhileIdle.Value, json);
             }
 
             if (TimeToLive != null)
             {
-                if (!first) json.Append(','); else first = false;
+                if (!first) json.Append(',');
+                else first = false;
+
                 json.Append(@"""time_to_live"":");
-                AppendJValue(json, TimeToLive.Value);
+                JsonHelper.WriteValue(TimeToLive.Value, json);
             }
 
             if (RestrictedPackageName != null)
             {
-                if (!first) json.Append(','); else first = false;
+                if (!first) json.Append(',');
+                else first = false;
+
                 json.Append(@"""restricted_package_name"":");
-                AppendJValue(json, RestrictedPackageName);
+                JsonHelper.WriteValue(RestrictedPackageName, json);
             }
 
             if (DryRun != null)
             {
-                if (!first) json.Append(','); else first = false;
+                if (!first) json.Append(',');
+                else first = false;
+
                 json.Append(@"""dry_run"":");
-                AppendJValue(json, DryRun.Value);
+                JsonHelper.WriteValue(DryRun.Value, json);
             }
             
             json.Append('}'); // main object
             
             return json.ToString();
         }
-        protected void AppendJArray(StringBuilder sb, object[] array)
-        {
-            bool first = true;
-            sb.Append('[');
-            foreach (object arg in array)
-            {
-                if (!first) sb.Append(','); else first = false;
-                AppendJValue(sb, arg);
-            }
-            sb.Append(']');
-        }
-        protected void AppendJValue(StringBuilder sb, object value)
-        {
-            if (value is string)
-            {
-                sb.Append(((string)value).ToJavaScript('"', true));
-            }
-            else
-            {
-                sb.AppendFormat(CultureInfo.InvariantCulture, @"{0}", value);
-            }
-        }
-
+        
         public override string ToString()
         {
             return ToJson();
