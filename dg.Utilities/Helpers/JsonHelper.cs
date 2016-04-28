@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace dg.Utilities.Helpers
+namespace dg.Utilities
 {
     public static class JsonHelper
     {
