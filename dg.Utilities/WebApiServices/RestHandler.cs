@@ -137,22 +137,29 @@ namespace dg.Utilities.WebApiServices
         }
 
         #region Variables
+
         private Dictionary<string, List<RestHandlerRoute>> _Routes = new Dictionary<string, List<RestHandlerRoute>>();
+
         private HttpStatusCode _DefaultStatusCode = HttpStatusCode.NotImplemented;
-        private string _PathPrefix = @"/";
+
+        private string _PathPrefix = @"/"
+;
         #endregion
 
         #region Properties
+
         public Dictionary<string, List<RestHandlerRoute>> Routes
         {
             get { return _Routes; }
             set { _Routes = value; }
         }
+
         public HttpStatusCode DefaultStatusCode
         {
             get { return _DefaultStatusCode; }
             set { _DefaultStatusCode = value; }
         }
+
         public string PathPrefix
         {
             get { return _PathPrefix; }
