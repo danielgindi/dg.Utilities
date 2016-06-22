@@ -43,6 +43,11 @@ namespace dg.Utilities.WebApiServices
             HttpRequest Request = context.Request;
             HttpResponse Response = context.Response;
 
+            if (AutoDiscardDisconnectedClients && !Response.IsClientConnected)
+            {
+                return;
+            }
+
             Response.ContentEncoding = Encoding.UTF8;
 
             string httpMethod = Request.HttpMethod;
@@ -172,6 +177,14 @@ namespace dg.Utilities.WebApiServices
                 _PathPrefix = value;
             }
         }
+
+        /// <summary>
+        /// Should disconnected clients be discarded automatically?
+        /// 
+        /// When a request is aborted, the chunks that were already sent might come in as a request.
+        /// And then files may be missing etc.
+        /// </summary>
+        public bool AutoDiscardDisconnectedClients { get; set; }
 
         #endregion
 
