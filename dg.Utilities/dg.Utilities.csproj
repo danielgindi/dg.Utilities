@@ -63,6 +63,7 @@
     <Compile Include="Helpers\Base64Helper.cs" />
     <Compile Include="Helpers\JsonHelper.cs" />
     <Compile Include="Helpers\StringHelper.cs" />
+    <Compile Include="Helpers\ListHelper.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
     <Compile Include="Helpers\HttpResponseHelper.cs" />
     <Compile Include="General Utilities\EndianSensitiveReader.cs" />
