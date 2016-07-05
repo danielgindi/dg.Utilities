@@ -7,7 +7,7 @@ using System.Configuration;
 
 namespace dg.Utilities
 {
-    public static class AppConfig
+    public static class AppConfigHelper
     {
         public static Double GetDouble(string key, Double defaultValue)
         {
@@ -16,6 +16,7 @@ namespace dg.Utilities
             if (!Double.TryParse(cfg, out value)) value = defaultValue;
             return value;
         }
+
         public static Decimal GetDecimal(string key, Decimal defaultValue)
         {
             string cfg = ConfigurationManager.AppSettings[key];
@@ -23,6 +24,7 @@ namespace dg.Utilities
             if (!Decimal.TryParse(cfg, out value)) value = defaultValue;
             return value;
         }
+
         public static Int32 GetInt32(string key, Int32 defaultValue)
         {
             string cfg = ConfigurationManager.AppSettings[key];
@@ -30,6 +32,7 @@ namespace dg.Utilities
             if (!Int32.TryParse(cfg, out value)) value = defaultValue;
             return value;
         }
+
         public static Int64 GetInt64(string key, Int64 defaultValue)
         {
             string cfg = ConfigurationManager.AppSettings[key];
@@ -37,6 +40,7 @@ namespace dg.Utilities
             if (!Int64.TryParse(cfg, out value)) value = defaultValue;
             return value;
         }
+
         public static bool GetBoolean(string key, bool defaultValue)
         {
             string cfg = (ConfigurationManager.AppSettings[key] ?? "").ToLowerInvariant();
@@ -44,6 +48,7 @@ namespace dg.Utilities
             if (cfg == @"false" || cfg == "no" || cfg == "0") return false;
             return defaultValue;
         }
+
         public static string GetString(string key, string defaultValue)
         {
             string cfg = ConfigurationManager.AppSettings[key];

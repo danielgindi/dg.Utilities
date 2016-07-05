@@ -60,6 +60,7 @@
     <Compile Include="Apns\NotificationDeliveryError.cs" />
     <Compile Include="Apns\NotificationPayload.cs" />
     <Compile Include="Extensions\ArrayListExtensions.cs" />
+    <Compile Include="Helpers\AppConfigHelper.cs" />
     <Compile Include="Helpers\Base64Helper.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
     <Compile Include="Helpers\FileHelper.cs" />
@@ -102,8 +103,7 @@
     <Compile Include="Bindable\BindableList.cs" />
     <Compile Include="Bindable\IBindableCollection.cs" />
     <Compile Include="General Utilities\Deprecated\Colors.cs" />
-    <Compile Include="General Utilities\Configuration.cs" />
-    <Compile Include="General Utilities\AppConfig.cs" />
+    <Compile Include="General Utilities\Deprecated\AppConfig.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="General Utilities\Deprecated\Http.cs" />
     <Compile Include="General Utilities\Deprecated\Location.cs" />
