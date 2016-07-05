@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
-namespace dg.Utilities.General_Utilities
+namespace dg.Utilities
 {
     public class EndianSensitiveReader : IDisposable
     {
