@@ -551,6 +551,24 @@ namespace dg.Utilities
             return un + domain;
         }
 
+        /// <summary>
+        /// Extracts the domain name out of an email address
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>Domain name</returns>
+        public static string GetEmailDomain(string email)
+        {
+            int atIndex = email.IndexOf('@');
+            if (atIndex > -1)
+            {
+                return email.Remove(0, atIndex + 1);
+            }
+            else
+            {
+                return "";
+            }
+        }
+
         #endregion
 
         #region Levenshtein Distance
