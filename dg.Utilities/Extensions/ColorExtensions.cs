@@ -17,22 +17,22 @@ namespace dg.Utilities
 
         public static string Css(this Color Input)
         {
-            return Colors.GetCss(Input);
+            return ColorHelper.GetCss(Input);
         }
 
         public static string Css(this Color Input, bool NumberSign)
         {
-            return Colors.GetCss(Input, NumberSign);
+            return ColorHelper.GetCss(Input, NumberSign);
         }
 
         public static string CssRgb(this Color Input)
         {
-            return Colors.GetCssRgb(Input);
+            return ColorHelper.GetCssRgb(Input);
         }
 
         public static string CssRgba(this Color Input)
         {
-            return Colors.GetCssRgba(Input);
+            return ColorHelper.GetCssRgba(Input);
         }
     }
 }

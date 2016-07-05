@@ -10,9 +10,9 @@ using System.Security.AccessControl;
 
 namespace dg.Utilities
 {
-    public static class Files
+    public static class FileHelper
     {
-        public static readonly string[] DANGEROUS_EXTENSIONS = new string[] 
+        public static readonly string[] DANGEROUS_EXTENSIONS = new string[]
             { 
                 // Possibly malicious files, they can execute server side.
                 ".aspx", ".asp", ".ascx", // ASP/ASP.NET
@@ -22,7 +22,7 @@ namespace dg.Utilities
                 ".pl", ".cgi", // Perl
 
                 // Possibly malicious files, they can be viruses.
-                ".exe", ".vbs", ".js", ".com", ".bat" 
+                ".exe", ".vbs", ".js", ".com", ".bat"
             };
 
         /// <summary>
@@ -39,16 +39,16 @@ namespace dg.Utilities
             return Regex.Replace(fileName, @"[\\/:*?""<>|\p{C}]", "_", RegexOptions.None);
         }
 
-        static public string AquireUploadFileName(
+        public static string AquireUploadFileName(
             string fileName,
             string folder, string subFolder,
-            bool bAppendDateTime,
-            bool StripUnicodeFileNames,
-            bool RenameDangerousExtensions
+            bool appendDateTime,
+            bool stripUnicodeFileNames,
+            bool renameDangerousExtensions
             )
         {
             fileName = CleanupFileName(System.IO.Path.GetFileName(fileName));
-            if (RenameDangerousExtensions)
+            if (renameDangerousExtensions)
             {
                 foreach (string ext in DANGEROUS_EXTENSIONS)
                 {
@@ -89,10 +89,10 @@ namespace dg.Utilities
             }
             else
             {
-                folder = Files.MapPath(folder);
+                folder = FileHelper.MapPath(folder);
             }
 
-            if (StripUnicodeFileNames)
+            if (stripUnicodeFileNames)
             {
                 char[] chars = fileName.ToCharArray();
                 fileName = string.Empty;
@@ -104,9 +104,9 @@ namespace dg.Utilities
             else fileName = fileName.Replace("'", "_").Replace("%", "").Replace("&", "");
             fileName = fileName.Trim();
 
-            if (fileName.Length == 0 || fileName.StartsWith(".")) bAppendDateTime = true;
+            if (fileName.Length == 0 || fileName.StartsWith(".")) appendDateTime = true;
 
-            if (bAppendDateTime)
+            if (appendDateTime)
             {
                 fileName = DateTime.UtcNow.ToString(@"yyyy_MM_dd_hh_mm_ss", DateTimeFormatInfo.InvariantInfo) + ((fileName.Length > 0 && !fileName.StartsWith(@".")) ? @"_" + fileName : fileName);
             }
@@ -134,7 +134,7 @@ namespace dg.Utilities
         /// <param name="postedFile">uploaded file</param>
         /// <param name="folder">target folder</param>
         /// <returns>file name without path, or null</returns>
-        static public string SaveFile(HttpPostedFile postedFile, string folder)
+        public static string SaveFile(HttpPostedFile postedFile, string folder)
         {
             return SaveFile(postedFile, folder, null, false);
         }
@@ -148,7 +148,7 @@ namespace dg.Utilities
         /// <param name="folder">target folder</param>
         /// <param name="appendDateTime">append date/time signature to file</param>
         /// <returns>file name without path, or null</returns>
-        static public string SaveFile(HttpPostedFile postedFile, string folder, bool appendDateTime)
+        public static string SaveFile(HttpPostedFile postedFile, string folder, bool appendDateTime)
         {
             return SaveFile(postedFile, folder, null, appendDateTime);
         }
@@ -162,7 +162,7 @@ namespace dg.Utilities
         /// <param name="strFolder">target folder</param>
         /// <param name="subFolder">sub folder to append to target folder</param>
         /// <returns>file name without path, or null</returns>
-        static public string SaveFile(HttpPostedFile postedFile, string folder, string subFolder)
+        public static string SaveFile(HttpPostedFile postedFile, string folder, string subFolder)
         {
             return SaveFile(postedFile, folder, subFolder, false);
         }
@@ -177,7 +177,7 @@ namespace dg.Utilities
         /// <param name="subFolder">sub folder to append to target folder</param>
         /// <param name="appendDateTime">append date/time signature to file</param>
         /// <returns>file name without path, or null</returns>
-        static public string SaveFile(HttpPostedFile postedFile, string folder, string subFolder, bool appendDateTime)
+        public static string SaveFile(HttpPostedFile postedFile, string folder, string subFolder, bool appendDateTime)
         {
             string strFilePath = AquireUploadFileName(postedFile.FileName, folder, subFolder, appendDateTime, true, true);
 

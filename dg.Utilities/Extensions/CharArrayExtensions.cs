@@ -8,7 +8,7 @@ namespace dg.Utilities
     {
         public static string GenerateRandomString(this char[] input, int length)
         {
-            return Strings.GenerateRandomString(input, length);
+            return StringHelper.GenerateRandomString(input, length);
         }
     }
 }

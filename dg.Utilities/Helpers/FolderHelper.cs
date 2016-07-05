@@ -9,7 +9,7 @@ using System.Collections;
 
 namespace dg.Utilities
 {
-    public static class Folders
+    public static class FolderHelper
     {
         // Do a cleanup of the folder name to avoid possible problems
         /// <summary>
@@ -109,7 +109,7 @@ namespace dg.Utilities
                 }
                 else
                 {
-                    path = Files.MapPath(path);
+                    path = FileHelper.MapPath(path);
                 }
             }
             if (!Directory.Exists(path))
@@ -165,17 +165,21 @@ namespace dg.Utilities
                 {
                 }
             }
+
             if (path == null || path.Length == 0)
             {
                 // Fallback 4
                 path = HttpContext.Current.Server.MapPath(@"~/temp/dg.Utilities");
             }
+
             if (!path.EndsWith(@"/") && !path.EndsWith(@"\"))
             {
                 if (path.IndexOf('/') > -1) path += '/';
                 else path += '\\';
             }
+
             if (VerifyDirectoryExists(path)) return path;
+
             throw new UnauthorizedAccessException(@"Cannot access TEMP folder!");
         }
     }
