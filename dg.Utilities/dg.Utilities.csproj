@@ -135,9 +135,6 @@
     <Compile Include="Threading\SingleThreadedTimeout.cs" />
     <Compile Include="Threading\SingleThreadedTimer.cs" />
     <Compile Include="Threading\Worker.cs" />
-    <Compile Include="WebApiServices\RestHandler.cs" />
-    <Compile Include="WebApiServices\RestHandlerRoute.cs" />
-    <Compile Include="WebApiServices\IRestHandlerTarget.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="strongKey.pfx" />
