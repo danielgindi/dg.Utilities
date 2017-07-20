@@ -906,7 +906,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
@@ -955,7 +955,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
@@ -984,7 +984,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
@@ -1013,7 +1013,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
@@ -1042,7 +1042,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
@@ -1055,7 +1055,7 @@ namespace dg.Utilities.Spreadsheet
                 }
                 else
                 {
-                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{12:G29}</Data></Cell>\n", merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, Data));
                 }
             }
             else
@@ -1071,7 +1071,7 @@ namespace dg.Utilities.Spreadsheet
                 string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
                     (
                         (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{0}""", MergeAcross, MergeDown) :
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
                         (
                             (MergeAcross != 0) ?
                             string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
