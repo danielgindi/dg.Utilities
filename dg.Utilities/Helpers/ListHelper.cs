@@ -96,10 +96,10 @@ namespace dg.Utilities
             int matrixX;
             int matrixY;
             int index = 0;
-            for (matrixX = 0; matrixX < columnCount; matrixX++)
+            for (matrixX = 0; matrixX < columnCount && index < input.Count; matrixX++)
             {
                 column = new List<T>();
-                for (matrixY = 0; matrixY < rows; matrixY++)
+                for (matrixY = 0; matrixY < rows && index < input.Count; matrixY++)
                 {
                     if (input.Count + matrixX + 1 - (index + columnCount) == 0 && matrixY != 0)
                     {
