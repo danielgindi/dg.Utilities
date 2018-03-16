@@ -899,25 +899,26 @@ namespace dg.Utilities.Spreadsheet
             Columns.Add(strCol);
         }
 
-        public void SetCell(string Data, int StyleIndex = -1, bool FormatFromStyle = true, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(string data, int styleIndex = -1, bool formatFromStyle = true, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+
+                if (styleIndex != -1)
                 {
-                    if (FormatFromStyle)
+                    if (formatFromStyle)
                     {
-                        ExcelSheetStyle style = Styles[StyleIndex];
+                        ExcelSheetStyle style = Styles[styleIndex];
                         if (style.NumberFormat != null && (
                             style.NumberFormat == NumberFormat.Scientific ||
                             style.NumberFormat == NumberFormat.Fixed ||
@@ -925,164 +926,166 @@ namespace dg.Utilities.Spreadsheet
                             style.NumberFormat == NumberFormat.Number0 ||
                             style.NumberFormat == NumberFormat.Number0_00))
                         {
-                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(Data)));
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(data)));
                         }
                         else
                         {
-                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(Data)));
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(data)));
                         }
                     }
                     else
                     {
-                        Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(Data)));
+                        Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(data)));
                     }
                 }
                 else
                 {
-                    Write(string.Format("    <Cell{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(Data)));
+                    Write(string.Format("    <Cell{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(data)));
                 }
             }
             else
             {
-                Write(string.Format(@"""{0}"",", PrepareString(Data)));
+                Write(string.Format(@"""{0}"",", PrepareString(data)));
+            }
+        }
             }
         }
 
-        public void SetCell(int Data, int StyleIndex = -1, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(int data, int styleIndex = -1, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+                if (styleIndex != -1)
                 {
-                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", styleIndex + 21, merge, data));
                 }
                 else
                 {
-                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, Data));
+                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, data));
                 }
             }
             else
             {
-                Write(string.Format("{0},", Data));
+                Write(string.Format("{0},", data));
             }
         }
 
-        public void SetCell(Int64 Data, int StyleIndex = -1, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(Int64 data, int styleIndex = -1, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+                if (styleIndex != -1)
                 {
-                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", styleIndex + 21, merge, data));
                 }
                 else
                 {
-                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, Data));
+                    Write(string.Format("    <Cell{0}><Data ss:Type=\"Number\">{1}</Data></Cell>\n", merge, data));
                 }
             }
             else
             {
-                Write(string.Format("{0},", Data));
+                Write(string.Format("{0},", data));
             }
         }
                 
-        public void SetCell(double Data, int StyleIndex = -1, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(double data, int styleIndex = -1, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+                if (styleIndex != -1)
                 {
-                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", styleIndex + 21, merge, data));
                 }
                 else
                 {
-                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, data));
                 }
             }
             else
             {
-                Write(string.Format("{0},", Data));
+                Write(string.Format("{0},", data));
             }
         }
 
-        public void SetCell(decimal Data, int StyleIndex = -1, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCell(decimal data, int styleIndex = -1, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+                if (styleIndex != -1)
                 {
-                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", StyleIndex + 21, merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"Number\">{2:G29}</Data></Cell>\n", styleIndex + 21, merge, data));
                 }
                 else
                 {
-                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, Data));
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"Number\">{1:G29}</Data></Cell>\n", merge, data));
                 }
             }
             else
             {
-                Write(string.Format("{0},", Data));
+                Write(string.Format("{0},", data));
             }
         }
 
-        public void SetCellFormula(string Formula, string DataPlaceholder, int StyleIndex = -1, bool FormatFromStyle = true, int MergeAcross = 0, int MergeDown = 0)
+        public void SetCellFormula(string formula, string dataPlaceholder, int styleIndex = -1, bool formatFromStyle = true, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
             {
-                string merge = (MergeAcross == 0 && MergeDown == 0) ? @"" :
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
                     (
-                        (MergeAcross != 0 && MergeDown != 0) ?
-                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", MergeAcross, MergeDown) :
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
                         (
-                            (MergeAcross != 0) ?
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", MergeAcross) :
-                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", MergeDown)
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
                         )
                     );
-                if (StyleIndex != -1)
+                if (styleIndex != -1)
                 {
-                    if (FormatFromStyle)
+                    if (formatFromStyle)
                     {
-                        ExcelSheetStyle style = Styles[StyleIndex];
+                        ExcelSheetStyle style = Styles[styleIndex];
                         if (style.NumberFormat != null && (
                             style.NumberFormat == NumberFormat.Scientific ||
                             style.NumberFormat == NumberFormat.Fixed ||
@@ -1090,26 +1093,26 @@ namespace dg.Utilities.Spreadsheet
                             style.NumberFormat == NumberFormat.Number0 ||
                             style.NumberFormat == NumberFormat.Number0_00))
                         {
-                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\" {1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\" {1}><Data ss:Type=\"Number\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(dataPlaceholder), PrepareString(formula)));
                         }
                         else
                         {
-                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                            Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(dataPlaceholder), PrepareString(formula)));
                         }
                     }
                     else
                     {
-                        Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", StyleIndex + 21, merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                        Write(string.Format("    <Cell ss:StyleID=\"s{0}\" ss:Formula=\"{3}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(dataPlaceholder), PrepareString(formula)));
                     }
                 }
                 else
                 {
-                    Write(string.Format("    <Cell ss:Formula=\"{2}\"{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(DataPlaceholder), PrepareString(Formula)));
+                    Write(string.Format("    <Cell ss:Formula=\"{2}\"{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(dataPlaceholder), PrepareString(formula)));
                 }
             }
             else
             {
-                Write(string.Format(@"""{0}"",", PrepareString(Formula)));
+                Write(string.Format(@"""{0}"",", PrepareString(formula)));
             }
         }
 
