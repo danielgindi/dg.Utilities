@@ -95,28 +95,28 @@ namespace dg.Utilities.Spreadsheet
 
         #region Helpers
 
-        private string PrepareString(string Value)
+        private string PrepareString(string value)
         {
             if (IsXml)
             {
-                Value = Value.Replace(@"&", @"&amp;");
-                Value = Value.Replace(@"<", @"&lt;");
-                Value = Value.Replace(@">", @"&gt;");
-                Value = Value.Replace(@"""", @"&quot;");
-                Value = Value.Replace(@"'", @"&apos;");
-                Value = Value.Replace("\r", @"&#xD;");
-                Value = Value.Replace("\n", @"&#xA;");
+                value = value.Replace(@"&", @"&amp;");
+                value = value.Replace(@"<", @"&lt;");
+                value = value.Replace(@">", @"&gt;");
+                value = value.Replace(@"""", @"&quot;");
+                value = value.Replace(@"'", @"&apos;");
+                value = value.Replace("\r", @"&#xD;");
+                value = value.Replace("\n", @"&#xA;");
             }
             else
             {
                 if (!CsvMultilineSupport)
                 {
-                    Value = Value.Replace('\n', ' ');
-                    Value = Value.Replace('\r', ' ');
+                    value = value.Replace('\n', ' ');
+                    value = value.Replace('\r', ' ');
                 }
-                Value = Value.Replace(@"""", @"""""");
+                value = value.Replace(@"""", @"""""");
             }
-            return Value;
+            return value;
         }
         
         public override string ToString()
@@ -948,6 +948,34 @@ namespace dg.Utilities.Spreadsheet
                 Write(string.Format(@"""{0}"",", PrepareString(data)));
             }
         }
+
+        public void SetCellForcedString(string data, int styleIndex = -1, bool formatFromStyle = true, int mergeAcross = 0, int mergeDown = 0)
+        {
+            if (IsXml)
+            {
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
+                    (
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
+                        (
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
+                        )
+                    );
+
+                if (styleIndex != -1)
+                {
+                    Write(string.Format("    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"String\">{2}</Data></Cell>\n", styleIndex + 21, merge, PrepareString(data)));
+                }
+                else
+                {
+                    Write(string.Format("    <Cell{0}><Data ss:Type=\"String\">{1}</Data></Cell>\n", merge, PrepareString(data)));
+                }
+            }
+            else
+            {
+                Write(string.Format("\"=\"\"{0}\"\"\",", PrepareString(data)));
             }
         }
 
