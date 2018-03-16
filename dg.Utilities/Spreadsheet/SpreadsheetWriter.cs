@@ -1095,6 +1095,37 @@ namespace dg.Utilities.Spreadsheet
             }
         }
 
+        public void SetCell(DateTime data, int styleIndex = -1, int mergeAcross = 0, int mergeDown = 0)
+        {
+            var dateFormat = "yyyy-MM-ddTHH:mm:ss.fff";
+
+            if (IsXml)
+            {
+                string merge = (mergeAcross == 0 && mergeDown == 0) ? @"" :
+                    (
+                        (mergeAcross != 0 && mergeDown != 0) ?
+                        string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}"" ss:MergeDown=""{1}""", mergeAcross, mergeDown) :
+                        (
+                            (mergeAcross != 0) ?
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeAcross=""{0}""", mergeAcross) :
+                            string.Format(CultureInfo.InvariantCulture, @" ss:MergeDown=""{0}""", mergeDown)
+                        )
+                    );
+                if (styleIndex != -1)
+                {
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"s{0}\"{1}><Data ss:Type=\"DateTime\">{2}</Data></Cell>\n", styleIndex + 21, merge, data.Year <= 1 ? "" : data.ToString(dateFormat)));
+                }
+                else
+                {
+                    Write(string.Format(CultureInfo.InvariantCulture, "    <Cell{0}><Data ss:Type=\"DateTime\">{1}</Data></Cell>\n", merge, data.Year <= 1 ? "" : data.ToString(dateFormat)));
+                }
+            }
+            else
+            {
+                Write(string.Format("{0},", data.Year <= 1 ? "" : data.ToString(dateFormat)));
+            }
+        }
+
         public void SetCellFormula(string formula, string dataPlaceholder, int styleIndex = -1, bool formatFromStyle = true, int mergeAcross = 0, int mergeDown = 0)
         {
             if (IsXml)
