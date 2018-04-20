@@ -14,14 +14,26 @@ namespace dg.Utilities.Apns
         /// </summary>
         public NotificationAlert()
         {
+            Title = null;
             Body = null;
             ActionLocalizedKey = null;
+            TitleLocalizedKey = null;
+            TitleLocalizedArgs = new List<object>();
             LocalizedKey = null;
             LocalizedArgs = new List<object>();
         }
 
         /// <summary>
-        /// Body Text of the Notification's Alert
+        /// Title text of the Notification's Alert
+        /// </summary>
+        public string Title
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Body text of the Notification's Alert
         /// </summary>
         public string Body
         {
@@ -65,9 +77,32 @@ namespace dg.Utilities.Apns
             set;
         }
 
+        /// <summary>
+        /// Localized Key for Title
+        /// </summary>
+        public string TitleLocalizedKey
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Localized Argument List for Title
+        /// </summary>
+        public List<object> TitleLocalizedArgs
+        {
+            get;
+            set;
+        }
+
         public void AddLocalizedArgs(params object[] values)
         {
             this.LocalizedArgs.AddRange(values);
+        }
+
+        public void AddTitleLocalizedArgs(params object[] values)
+        {
+            this.TitleLocalizedArgs.AddRange(values);
         }
 
         /// <summary>
@@ -77,10 +112,13 @@ namespace dg.Utilities.Apns
         {
             get
             {
-                if (!string.IsNullOrEmpty(Body)
-                    || !string.IsNullOrEmpty(ActionLocalizedKey)
+                if (!string.IsNullOrEmpty(Title)
+                    || !string.IsNullOrEmpty(TitleLocalizedKey)
+                    || !string.IsNullOrEmpty(Body)
                     || !string.IsNullOrEmpty(LocalizedKey)
-                    || (LocalizedArgs != null && LocalizedArgs.Count > 0))
+                    || !string.IsNullOrEmpty(ActionLocalizedKey)
+                    || (LocalizedArgs != null && LocalizedArgs.Count > 0)
+                    || (TitleLocalizedArgs != null && TitleLocalizedArgs.Count > 0))
                     return false;
                 else
                     return true;

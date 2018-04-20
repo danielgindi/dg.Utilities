@@ -91,58 +91,69 @@ namespace dg.Utilities.Apns
             if (!this.Alert.IsEmpty)
             {
                 if (!apsFirst) json.Append(','); else apsFirst = false;
-                if (!string.IsNullOrEmpty(this.Alert.Body)
-                    && string.IsNullOrEmpty(this.Alert.LocalizedKey)
-                    && string.IsNullOrEmpty(this.Alert.ActionLocalizedKey)
-                    && string.IsNullOrEmpty(this.Alert.LaunchImage)
-                    && (this.Alert.LocalizedArgs == null || this.Alert.LocalizedArgs.Count <= 0))
+
+                json.Append(@"""alert"":{");
+
+                bool alertFirst = true;
+
+                if (!string.IsNullOrEmpty(this.Alert.TitleLocalizedKey))
                 {
-                    json.Append(@"""alert"":");
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""title-loc-key"":");
+                    JsonHelper.WriteValue(this.Alert.TitleLocalizedKey, json);
+                }
+
+                if (this.Alert.TitleLocalizedArgs != null && this.Alert.TitleLocalizedArgs.Count > 0)
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""title-loc-args"":");
+                    JsonHelper.WriteValue(this.Alert.TitleLocalizedArgs.ToArray(), json);
+                }
+
+                if (!string.IsNullOrEmpty(this.Alert.LocalizedKey))
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""loc-key"":");
+                    JsonHelper.WriteValue(this.Alert.LocalizedKey, json);
+                }
+
+                if (this.Alert.LocalizedArgs != null && this.Alert.LocalizedArgs.Count > 0)
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""loc-args"":");
+                    JsonHelper.WriteValue(this.Alert.LocalizedArgs.ToArray(), json);
+                }
+
+                if (!string.IsNullOrEmpty(this.Alert.Title))
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""title"":");
+                    JsonHelper.WriteValue(this.Alert.Title, json);
+                }
+
+                if (!string.IsNullOrEmpty(this.Alert.Body))
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""body"":");
                     JsonHelper.WriteValue(this.Alert.Body, json);
                 }
-                else
+
+                if (!string.IsNullOrEmpty(this.Alert.LaunchImage))
                 {
-                    json.Append(@"""alert"":{");
-
-                    bool alertFirst = true;
-
-                    if (!string.IsNullOrEmpty(this.Alert.LocalizedKey))
-                    {
-                        if (!alertFirst) json.Append(','); else alertFirst = false;
-                        json.Append(@"""loc-key"":");
-                        JsonHelper.WriteValue(this.Alert.LocalizedKey, json);
-                    }
-
-                    if (this.Alert.LocalizedArgs != null && this.Alert.LocalizedArgs.Count > 0)
-                    {
-                        if (!alertFirst) json.Append(','); else alertFirst = false;
-                        json.Append(@"""loc-args"":");
-                        JsonHelper.WriteValue(this.Alert.LocalizedArgs.ToArray(), json);
-                    }
-
-                    if (!string.IsNullOrEmpty(this.Alert.Body))
-                    {
-                        if (!alertFirst) json.Append(','); else alertFirst = false;
-                        json.Append(@"""body"":");
-                        JsonHelper.WriteValue(this.Alert.Body, json);
-                    }
-
-                    if (!string.IsNullOrEmpty(this.Alert.LaunchImage))
-                    {
-                        if (!alertFirst) json.Append(','); else alertFirst = false;
-                        json.Append(@"""launch-image"":");
-                        JsonHelper.WriteValue(this.Alert.LaunchImage, json);
-                    }
-
-                    if (!string.IsNullOrEmpty(this.Alert.ActionLocalizedKey))
-                    {
-                        if (!alertFirst) json.Append(','); else alertFirst = false;
-                        json.Append(@"""action-loc-key"":");
-                        JsonHelper.WriteValue(this.Alert.ActionLocalizedKey, json);
-                    }
-
-                    json.Append('}');
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""launch-image"":");
+                    JsonHelper.WriteValue(this.Alert.LaunchImage, json);
                 }
+
+                if (!string.IsNullOrEmpty(this.Alert.ActionLocalizedKey))
+                {
+                    if (!alertFirst) json.Append(','); else alertFirst = false;
+                    json.Append(@"""action-loc-key"":");
+                    JsonHelper.WriteValue(this.Alert.ActionLocalizedKey, json);
+                }
+
+                json.Append('}');
+
             }
 
             if (this.Badge.HasValue)
