@@ -11,6 +11,9 @@ namespace dg.Utilities.CSV
         private Stream _Stream = null;
         private bool _MultilineSupport = true;
         private bool _LastLineEndCR = false;
+        private SeparatorTypeOptions _SeparatorType = SeparatorTypeOptions.Auto;
+        private char _Separator = ',';
+        private bool _SeparatorDetected = false;
 
         public CsvReader(Stream inputStream)
         {
@@ -28,6 +31,7 @@ namespace dg.Utilities.CSV
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -55,6 +59,30 @@ namespace dg.Utilities.CSV
         {
             get { return _MultilineSupport; }
             set { _MultilineSupport = value; }
+        }
+
+        public SeparatorTypeOptions SeparatorType
+        {
+            get { return _SeparatorType; }
+            set
+            {
+                _SeparatorType = value;
+
+                if (value == SeparatorTypeOptions.Auto)
+                {
+                    _SeparatorDetected = false;
+                }
+                else if (value == SeparatorTypeOptions.Comma)
+                {
+                    _SeparatorDetected = true;
+                    _Separator = ',';
+                }
+                else if (value == SeparatorTypeOptions.Tab)
+                {
+                    _SeparatorDetected = true;
+                    _Separator = '\t';
+                }
+            }
         }
 
         /// <summary>
@@ -122,7 +150,16 @@ namespace dg.Utilities.CSV
                         }
                         else
                         {
-                            if (c == ',')
+                            if (!_SeparatorDetected)
+                            {
+                                if (c == ',' || c == '\t')
+                                {
+                                    _SeparatorDetected = true;
+                                    _Separator = c;
+                                }
+                            }
+
+                            if (c == _Separator)
                             {
                                 columns.Add(sbColumn.ToString());
                                 sbColumn.Clear();
@@ -177,7 +214,16 @@ namespace dg.Utilities.CSV
                         }
                         else
                         {
-                            if (c == ',')
+                            if (!_SeparatorDetected)
+                            {
+                                if (c == ',' || c == '\t')
+                                {
+                                    _SeparatorDetected = true;
+                                    _Separator = c;
+                                }
+                            }
+
+                            if (c == _Separator)
                             {
                                 columns.Add(sbColumn.ToString());
                                 sbColumn.Clear();
@@ -215,6 +261,13 @@ namespace dg.Utilities.CSV
                     return null;
                 }
             }
+        }
+
+        public enum SeparatorTypeOptions
+        {
+            Auto,
+            Comma,
+            Tab
         }
     }
 }
