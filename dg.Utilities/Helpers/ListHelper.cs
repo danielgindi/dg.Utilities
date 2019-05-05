@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.IO.Compression;
-using System.Text.RegularExpressions;
 using System.Reflection;
 
 namespace dg.Utilities
@@ -18,8 +14,10 @@ namespace dg.Utilities
         public static List<T> Sort<T>(List<T> input, string propertyName, bool ascendingOrder)
         {
             if (propertyName == null || input.Count < 2) return input;
+
             Type type = input[0].GetType();
             PropertyInfo info = type.GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+
             if (info != null)
             {
                 if (ascendingOrder)
@@ -77,6 +75,7 @@ namespace dg.Utilities
                     });
                 }
             }
+
             return input;
         }
 

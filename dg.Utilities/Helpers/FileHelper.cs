@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Web;
 using System.IO;
 using System.Web.Hosting;
@@ -186,7 +184,7 @@ namespace dg.Utilities
             {
                 if (!System.IO.Directory.Exists(dirPath))
                 {
-                    Folders.CreateDirectory(dirPath, false);
+                    FolderHelper.CreateDirectory(dirPath, false);
                 }
             }
 
@@ -231,7 +229,7 @@ namespace dg.Utilities
         /// <returns>Path to the temp file that was created</returns>
         public static string CreateEmptyTempFile()
         {
-            string tempFilePath = Folders.GetTempDir() + Guid.NewGuid().ToString() + @".tmp";
+            string tempFilePath = FolderHelper.GetTempDir() + Guid.NewGuid().ToString() + @".tmp";
             FileStream fs = null;
             while (true)
             {
@@ -245,7 +243,7 @@ namespace dg.Utilities
                     Console.WriteLine(@"Utility.File.CreateEmptyTempFile - Error: {0}", ioex.ToString());
                     if (System.IO.File.Exists(tempFilePath))
                     { // File exists, make up another name
-                        tempFilePath = Folders.GetTempDir() + Guid.NewGuid().ToString() + @".tmp";
+                        tempFilePath = FolderHelper.GetTempDir() + Guid.NewGuid().ToString() + @".tmp";
                     }
                     else
                     { // Another error, throw it back up

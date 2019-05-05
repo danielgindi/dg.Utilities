@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace dg.Utilities
 {
@@ -160,15 +159,6 @@ namespace dg.Utilities
         public static int DistanceFrom(this string input, string fromString)
         {
             return StringHelper.LevenshteinDistance(fromString, input);
-        }
-
-        #endregion
-
-        #region Enums
-
-        public static T ParseAsEnum<T>(this string value)
-        {
-            return StringHelper.ParseAsEnum<T>(value);
         }
 
         #endregion

@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
-using System.Diagnostics;
 
 namespace dg.Utilities.Threading
 {
-    /// <summary>
-    /// Written by Daniel Cohen Gindi (danielgindi@gmail.com)
-    /// </summary>
     public class SingleThreadedTimer : IDisposable
     {
         public SingleThreadedTimer()
