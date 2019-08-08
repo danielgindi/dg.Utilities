@@ -7,16 +7,16 @@ namespace dg.Utilities.GoogleCloudMessaging
 {
     public class NotificationSender
     {
-        public string GcmApiKey { get; set; }
+        public string FcmApiKey { get; set; }
 
-        public string GcmAccessPointUrl = @"https://android.googleapis.com/gcm/send";
+        public string FcmAccessPointUrl = @"https://fcm.googleapis.com/fcm/send";
 
         public NotificationDeliveryResult SendHttpPayload(HttpNotificationPayload Payload)
         {
-            WebRequest webRequest = WebRequest.Create(GcmAccessPointUrl);
+            WebRequest webRequest = WebRequest.Create(FcmAccessPointUrl);
             webRequest.Method = "POST";
             webRequest.ContentType = "application/json";
-            webRequest.Headers.Add("Authorization", "key=" + GcmApiKey);
+            webRequest.Headers.Add("Authorization", "key=" + FcmApiKey);
             Byte[] byteArray = Encoding.UTF8.GetBytes(Payload.ToJson());
             webRequest.ContentLength = byteArray.Length;
 

@@ -12,13 +12,13 @@ namespace dg.Utilities.GoogleCloudMessaging
 
         public string GcmApiKey
         {
-            get { return notificationSender.GcmApiKey; }
-            set { notificationSender.GcmApiKey = value; }
+            get { return notificationSender.FcmApiKey; }
+            set { notificationSender.FcmApiKey = value; }
         }
         public string GcmAccessPointUrl
         {
-            get { return notificationSender.GcmAccessPointUrl; }
-            set { notificationSender.GcmAccessPointUrl = value; }
+            get { return notificationSender.FcmAccessPointUrl; }
+            set { notificationSender.FcmAccessPointUrl = value; }
         }
 
         private SingleThreadedTimer timer = null;
@@ -47,7 +47,7 @@ namespace dg.Utilities.GoogleCloudMessaging
 
         public HttpNotificationService(string GcmApiKey, int TimerStepMilliseconds)
         {
-            notificationSender.GcmApiKey = GcmApiKey;
+            notificationSender.FcmApiKey = GcmApiKey;
             GCM_TIMER_MS = TimerStepMilliseconds;
 
             timer = new SingleThreadedTimer();
