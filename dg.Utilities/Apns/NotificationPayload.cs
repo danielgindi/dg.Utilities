@@ -87,7 +87,7 @@ namespace dg.Utilities.Apns
 
             bool apsFirst = true;
 
-            if (!this.Alert.IsEmpty)
+            if (this.Alert != null && !this.Alert.IsEmpty)
             {
                 if (!apsFirst) json.Append(','); else apsFirst = false;
 
@@ -180,9 +180,9 @@ namespace dg.Utilities.Apns
 
             foreach (string key in this.CustomItems.Keys)
             {
-                json.Append(@",""");
-                json.Append(key);
-                json.Append(@""":");
+                json.Append(@",");
+                JsonHelper.WriteValue(key, json);
+                json.Append(@":");
                 if (this.CustomItems[key].Length == 1)
                 {
                     JsonHelper.WriteValue(this.CustomItems[key][0], json);

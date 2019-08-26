@@ -52,12 +52,13 @@ namespace dg.Utilities.Apns
             timer.Milliseconds = APNS_TIMER_MS;
             timer.Elapsed += DoSendApnsQueue;
         }
+
         public delegate void APNSErrorDelegate();
 
-        public void SendMessage(string DeviceToken, string Message, int? Badge, string Sound, APNSErrorDelegate Rejected)
+        public void SendMessage(string deviceToken, string message, int? badge, string sound, APNSErrorDelegate rejected)
         {
-            NotificationPayload payload = new NotificationPayload(DeviceToken, Message, Badge, Sound);
-            payload.ContextData = Rejected;
+            NotificationPayload payload = new NotificationPayload(deviceToken, message, badge, sound);
+            payload.ContextData = rejected;
             currentQueue.Enqueue(payload);
 
             if (!timer.IsStarted)
@@ -65,19 +66,21 @@ namespace dg.Utilities.Apns
                 timer.Start();
             }
         }
-        public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, APNSErrorDelegate Rejected)
+
+        public void SendMessage(string deviceToken, NotificationAlert alert, int? badge, string sound, APNSErrorDelegate rejected)
         {
-            SendMessage(DeviceToken, Alert, Badge, Sound, null, Rejected);
+            SendMessage(deviceToken, alert, badge, sound, null, rejected);
         }
-        public void SendMessage(string DeviceToken, NotificationAlert Alert, int? Badge, string Sound, Dictionary<string, object[]> CustomItems, APNSErrorDelegate Rejected)
+
+        public void SendMessage(string deviceToken, NotificationAlert alert, int? badge, string sound, Dictionary<string, object[]> custom_items, APNSErrorDelegate rejected)
         {
-            NotificationPayload payload = new NotificationPayload(DeviceToken, Alert, Badge, Sound);
-            payload.ContextData = Rejected;
-            if (CustomItems != null)
+            NotificationPayload payload = new NotificationPayload(deviceToken, alert, badge, sound);
+            payload.ContextData = rejected;
+            if (custom_items != null)
             {
-                foreach (string key in CustomItems.Keys)
+                foreach (string key in custom_items.Keys)
                 {
-                    payload.AddCustom(key, CustomItems[key]);
+                    payload.AddCustom(key, custom_items[key]);
                 }
             }
             currentQueue.Enqueue(payload);
