@@ -55,12 +55,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Apns\NotificationService.cs" />
-    <Compile Include="Apns\Feedback.cs" />
-    <Compile Include="Apns\NotificationAlert.cs" />
-    <Compile Include="Apns\NotificationChannel.cs" />
-    <Compile Include="Apns\NotificationDeliveryError.cs" />
-    <Compile Include="Apns\NotificationPayload.cs" />
     <Compile Include="Helpers\AppConfigHelper.cs" />
     <Compile Include="Helpers\Base64Helper.cs" />
     <Compile Include="Helpers\ColorHelper.cs" />
@@ -74,10 +68,6 @@
     <Compile Include="Helpers\ListHelper.cs" />
     <Compile Include="Helpers\UriHelper.cs" />
     <Compile Include="Helpers\HttpResponseHelper.cs" />
-    <Compile Include="GoogleCloudMessaging\NotificationSender.cs" />
-    <Compile Include="GoogleCloudMessaging\NotificationDeliveryResult.cs" />
-    <Compile Include="GoogleCloudMessaging\NotificationPayload.cs" />
-    <Compile Include="GoogleCloudMessaging\HttpNotificationService.cs" />
     <Compile Include="Serialization\SerializableLongLongKey.cs" />
     <Compile Include="Serialization\SerializableIntIntKey.cs" />
     <Compile Include="Markups\BBCode\BBCode.cs" />

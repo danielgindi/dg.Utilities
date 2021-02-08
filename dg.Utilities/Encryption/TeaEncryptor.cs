@@ -6,54 +6,18 @@ namespace dg.Utilities.Encryption
 {
     public static class TeaEncryptor
     {
-        static private List<Int32> BytesToLongs(byte[] s)
-        {
-            int slen = s.Length;
-            int len = (int)Math.Ceiling(((double)slen) / 4.0d);
-            List<Int32> l = new List<Int32>(len);
-            int ll, lll;
-            for (int i = 0; i < len; i++)
-            {
-                lll = 0;
-                ll = i * 4;
-                if (ll < slen) lll += s[ll];
-                ll = i * 4 + 1;
-                if (ll < slen) lll += s[ll] << 8;
-                ll = i * 4 + 2;
-                if (ll < slen) lll += s[ll] << 16;
-                ll = i * 4 + 3;
-                if (ll < slen) lll += s[ll] << 24;
-                l.Add((Int32)lll);
-            }
-            return l;
-        }
-        static private byte[] LongsToBytes(List<Int32> l)
-        {
-            List<byte> a = new List<byte>(l.Count * 4);
-            Int32 ll;
-            for (int i = 0; i < l.Count; i++)
-            {
-                ll = l[i];
-                a.Add((byte)(ll & 0xFF));
-                a.Add((byte)(ll >> 8 & 0xFF));
-                a.Add((byte)(ll >> 16 & 0xFF));
-                a.Add((byte)(ll >> 24 & 0xFF));
-            }
-            return a.ToArray();
-        }
-        static public string Encrypt(string plaintext, string password)
+        public static string Encrypt(string plaintext, string password)
         {
             if (plaintext.Length == 0) return @"";
             if (password.Length == 0) return plaintext;
-            List<Int32> v = BytesToLongs(Encoding.UTF8.GetBytes(plaintext));
-            while (v.Count <= 1) v.Add(0);
-            List<Int32> k = BytesToLongs(Encoding.UTF8.GetBytes(password));
-            while (k.Count < 4) k.Add(0);
-            int n = v.Count;
+            
+            var v = BytesToLongs(Encoding.UTF8.GetBytes(plaintext), 2);
+            var k = BytesToLongs(Encoding.UTF8.GetBytes(password), 4);
+            int n = v.Length;
 
-            Int32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = unchecked((Int32)0x9e3779b9), mx;
-            Int32 q;
-            q = 6 + 52 / n;
+            UInt32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = 0x9e3779b9, mx;
+            UInt32 q = (UInt32)(6 + 52 / n);
+            
             while (q-- > 0)
             {
                 sum += DELTA;
@@ -61,37 +25,39 @@ namespace dg.Utilities.Encryption
                 for (int p = 0; p < n; p++)
                 {
                     y = v[(p + 1) % n];
-                    mx = ((Int32)((UInt32)z >> 5) ^ (Int32)((UInt32)y << 2)) + (Int32)(((UInt32)y >> 3) ^ ((UInt32)z << 4)) ^ ((sum ^ y)) + (k[(p & 3 ^ e)] ^ z);
+                    mx = ((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4)) ^ (sum ^ y) + (k[(p & 3 ^ e)] ^ z);
                     z = v[p] += mx;
                 }
             }
+            
             return Convert.ToBase64String(LongsToBytes(v), Base64FormattingOptions.None);
         }
-        static public string Decrypt(string ciphertext, string password)
-        {
-            return Decrypt(ciphertext, password, false);
-        }
-        static public string Decrypt(string ciphertext, string password, bool fallBackToInput)
+
+        public static string Decrypt(string ciphertext, string password, bool fallBackToInput = false)
         {
             if (ciphertext.Length == 0) return @"";
             if (password.Length == 0) return ciphertext;
+            
             byte[] fromBase64 = null;
+            
             try
             {
                 fromBase64 = Convert.FromBase64String(ciphertext);
             }
-            catch 
+            catch
             {
-                return ciphertext;
+                if (fallBackToInput)
+                    return ciphertext;
+                
+                throw;
             }
-            List<Int32> v = BytesToLongs(fromBase64);
-            List<Int32> k = BytesToLongs(Encoding.UTF8.GetBytes(password));
-            while (k.Count < 4) k.Add(0);
-            int n = v.Count;
+            
+            var v = BytesToLongs(fromBase64);
+            var k = BytesToLongs(Encoding.UTF8.GetBytes(password), 4);
+            int n = v.Length;
 
-            Int32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = unchecked((Int32)0x9e3779b9), mx;
-            Int32 q;
-            q = 6 + 52 / n;
+            UInt32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = 0x9e3779b9, mx;
+            UInt32 q = (UInt32)(6 + 52 / n);
             sum = q * DELTA;
 
             while (sum != 0)
@@ -100,16 +66,54 @@ namespace dg.Utilities.Encryption
                 for (var p = n - 1; p >= 0; p--)
                 {
                     z = v[p > 0 ? p - 1 : n - 1];
-                    mx = ((Int32)((UInt32)z >> 5) ^ (Int32)((UInt32)y << 2)) + (Int32)(((UInt32)y >> 3) ^ ((UInt32)z << 4)) ^ ((sum ^ y)) + (k[(p & 3 ^ e)] ^ z);
+                    mx = ((z >> 5) ^ (y << 2)) + ((y >> 3) ^ (z << 4)) ^ (sum ^ y) + (k[(p & 3 ^ e)] ^ z);
                     y = v[p] -= mx;
                 }
                 sum -= DELTA;
             }
 
-            List<byte> plaintext = new List<byte>(LongsToBytes(v));
-            while (plaintext.Count > 0 && plaintext[plaintext.Count - 1] == 0) plaintext.RemoveAt(plaintext.Count - 1);
-            if (fallBackToInput && plaintext.Count == 0) return ciphertext;
-            else return Encoding.UTF8.GetString(plaintext.ToArray());
+            var decryptedBytes = LongsToBytes(v);
+            var decryptedLen = decryptedBytes.Length;
+            while (decryptedLen > 0 && decryptedBytes[decryptedLen - 1] == 0)
+                decryptedLen--;
+
+            if (decryptedLen == 0)
+                return "";
+            else return Encoding.UTF8.GetString(decryptedBytes, 0, decryptedLen);
+        }
+
+        private static UInt32[] BytesToLongs(byte[] s, int padZeroMinLength = 0)
+        {
+            var slen = s.Length;
+            var len = (int)Math.Ceiling(((double)slen) / 4.0d);
+            var l = new UInt32[Math.Max(len, padZeroMinLength)];
+            
+            for (int i = 0, i4 = 0; i < len; i++, i4 += 4)
+            {
+                l[i] = ((s[i4])) +
+                    ((i4 + 1) >= slen ? (UInt32)0 << 8 : ((UInt32)s[i4 + 1] << 8)) +
+                    ((i4 + 2) >= slen ? (UInt32)0 << 16 : ((UInt32)s[i4 + 2] << 16)) +
+                    ((i4 + 3) >= slen ? (UInt32)0 << 24 : ((UInt32)s[i4 + 3] << 24));
+            }
+            
+            return l;
+        }
+
+        private static byte[] LongsToBytes(UInt32[] l)
+        {
+            var llen = l.Length;
+            var b = new byte[llen * 4];
+            
+            for (int i = 0, i4 = 0; i < llen; i++, i4 += 4)
+            {
+                var li = l[i];
+                b[i4] = (byte)(li & 0xFF);
+                b[i4 + 1] = (byte)(li >> (8 & 0xFF));
+                b[i4 + 2] = (byte)(li >> (16 & 0xFF));
+                b[i4 + 3] = (byte)(li >> (24 & 0xFF));
+            }
+            
+            return b;
         }
     }
 }
