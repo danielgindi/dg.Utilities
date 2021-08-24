@@ -15,7 +15,7 @@ namespace dg.Utilities.Encryption
             var k = BytesToLongs(Encoding.UTF8.GetBytes(password), 4);
             int n = v.Length;
 
-            UInt32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = 0x9e3779b9, mx;
+            UInt32 z = v[n - 1], y, sum = 0, e, DELTA = 0x9e3779b9, mx;
             UInt32 q = (UInt32)(6 + 52 / n);
             
             while (q-- > 0)
@@ -38,7 +38,7 @@ namespace dg.Utilities.Encryption
             if (ciphertext.Length == 0) return @"";
             if (password.Length == 0) return ciphertext;
             
-            byte[] fromBase64 = null;
+            byte[] fromBase64;
             
             try
             {
@@ -56,9 +56,9 @@ namespace dg.Utilities.Encryption
             var k = BytesToLongs(Encoding.UTF8.GetBytes(password), 4);
             int n = v.Length;
 
-            UInt32 z = v[n - 1], y = v[0], sum = 0, e, DELTA = 0x9e3779b9, mx;
+            UInt32 z, y = v[0], e, DELTA = 0x9e3779b9, mx;
             UInt32 q = (UInt32)(6 + 52 / n);
-            sum = q * DELTA;
+            UInt32 sum = q * DELTA;
 
             while (sum != 0)
             {

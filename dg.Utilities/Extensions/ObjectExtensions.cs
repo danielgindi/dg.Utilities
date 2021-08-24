@@ -6,10 +6,13 @@ namespace dg.Utilities
     {
         public static bool IsNull(this object value)
         {
-            if (value == null) return true;
-            if (value is System.Data.SqlTypes.INullable && ((System.Data.SqlTypes.INullable)value).IsNull) return true;
-            if (value is DBNull) return true;
-            else return false;
+            switch (value)
+            {
+                case null: return true;
+                case System.Data.SqlTypes.INullable nullable when nullable.IsNull: return true;
+                case DBNull _: return true;
+                default: return false;
+            }
         }
     }
 }

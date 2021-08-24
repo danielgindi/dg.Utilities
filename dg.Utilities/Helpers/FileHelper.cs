@@ -259,7 +259,6 @@ namespace dg.Utilities
             if (fs != null)
             {
                 fs.Dispose();
-                fs = null;
                 return tempFilePath;
             }
             return null;
@@ -271,13 +270,13 @@ namespace dg.Utilities
         /// <param name="filePath">Path to the target file</param>
         public static void ResetFilePermissionsToInherited(string filePath)
         {
-            FileSecurity fileSecurity = File.GetAccessControl(filePath);
+            FileSecurity fileSecurity = new FileSecurity(filePath, AccessControlSections.Access | AccessControlSections.Owner | AccessControlSections.Group);
             fileSecurity.SetAccessRuleProtection(false, true);
             foreach (FileSystemAccessRule rule in fileSecurity.GetAccessRules(true, false, typeof(System.Security.Principal.NTAccount)))
             {
                 fileSecurity.RemoveAccessRule(rule);
             }
-            File.SetAccessControl(filePath, fileSecurity);
+            new FileInfo(filePath).SetAccessControl(fileSecurity);
         }
 
         public class TemporaryFileDeleter : IDisposable

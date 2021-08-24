@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>dg.Utilities</RootNamespace>
     <AssemblyName>dg.Utilities</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -71,9 +71,6 @@
     <Compile Include="Serialization\SerializableLongLongKey.cs" />
     <Compile Include="Serialization\SerializableIntIntKey.cs" />
     <Compile Include="Markups\BBCode\BBCode.cs" />
-    <Compile Include="Bindable\BindableCollection.cs" />
-    <Compile Include="Bindable\BindableList.cs" />
-    <Compile Include="Bindable\IBindableCollection.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\UriExtensions.cs" />
     <Compile Include="Csv\CsvReader.cs" />

@@ -61,9 +61,9 @@ namespace dg.Utilities.Serialization
             {
                 xs = new XmlSerializer(Type.GetType(typeName));
             }
-            catch (System.Exception exFirst)
+            catch (Exception)
             {
-                if (isStrict) throw exFirst;
+                if (isStrict) throw;
                 try
                 {
                     int iStrip = typeName.LastIndexOf(@", Version=");
@@ -72,7 +72,7 @@ namespace dg.Utilities.Serialization
                 }
                 catch
                 {
-                    if (isStrict) throw exFirst;
+                    if (isStrict) throw;
                 }
             }
             if (xs != null)
