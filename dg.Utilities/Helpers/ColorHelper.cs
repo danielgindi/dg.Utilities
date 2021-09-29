@@ -105,19 +105,39 @@ namespace dg.Utilities
             {
                 css = css.Trim('#', ' ', ';');
                 if (css.Length == 3) css = "" + (char)css[0] + (char)css[0] + (char)css[1] + (char)css[1] + (char)css[2] + (char)css[2];
-                if (css.Length != 6) return Color.Empty;
-                try
+                if (css.Length == 6)
                 {
-                    return Color.FromArgb(
-                        Int32.Parse(css.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture),
-                        Int32.Parse(css.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture),
-                        Int32.Parse(css.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, InvariantCulture)
-                        );
+                    try
+                    {
+                        return Color.FromArgb(
+                            Int32.Parse(css.Substring(0, 2), NumberStyles.HexNumber, InvariantCulture),
+                            Int32.Parse(css.Substring(2, 2), NumberStyles.HexNumber, InvariantCulture),
+                            Int32.Parse(css.Substring(4, 2), NumberStyles.HexNumber, InvariantCulture)
+                            );
+                    }
+                    catch
+                    {
+                        return Color.Empty;
+                    }
                 }
-                catch
+                else if (css.Length == 8)
                 {
-                    return Color.Empty;
+                    try
+                    {
+                        return Color.FromArgb(
+                            Int32.Parse(css.Substring(6, 2), NumberStyles.HexNumber, InvariantCulture),
+                            Int32.Parse(css.Substring(0, 2), NumberStyles.HexNumber, InvariantCulture),
+                            Int32.Parse(css.Substring(2, 2), NumberStyles.HexNumber, InvariantCulture),
+                            Int32.Parse(css.Substring(4, 2), NumberStyles.HexNumber, InvariantCulture)
+                            );
+                    }
+                    catch
+                    {
+                        return Color.Empty;
+                    }
                 }
+
+                return Color.Empty;
             }
         }
 
